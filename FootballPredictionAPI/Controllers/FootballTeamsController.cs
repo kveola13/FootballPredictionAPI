@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FootballPredictionAPI.Models;
 using FootballPredictionAPI.Context;
+using FootballPredictionAPI.DTOs;
 
 namespace FootballPredictionAPI.Controllers
 {
@@ -15,10 +17,12 @@ namespace FootballPredictionAPI.Controllers
     public class FootballTeamsController : ControllerBase
     {
         private readonly FootballTeamContext _context;
+        private readonly IMapper _mapper;
 
-        public FootballTeamsController(FootballTeamContext context)
+        public FootballTeamsController(FootballTeamContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         [HttpPost("seed")]
@@ -42,23 +46,23 @@ namespace FootballPredictionAPI.Controllers
         }
         
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<FootballTeam>>> GetTeams()
+        public async Task<ActionResult<IEnumerable<FootballTeamDTO>>> GetTeams()
         {
           if (_context.Teams == null)
           {
               return NotFound();
           }
-            return await _context.Teams.ToListAsync();
+             return Ok(_mapper.Map<IEnumerable<FootballTeamDTO>>(await _context.Teams.ToListAsync()));
         }
         
         [HttpGet("{id}")]
-        public async Task<ActionResult<FootballTeam>> GetFootballTeam(int id)
+        public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(int id)
         {
           if (_context.Teams == null)
           {
               return NotFound();
           }
-            var footballTeam = await _context.Teams.FindAsync(id);
+            var footballTeam = _mapper.Map<FootballTeamDTO>(await _context.Teams.FindAsync(id));
 
             if (footballTeam == null)
             {
@@ -69,14 +73,12 @@ namespace FootballPredictionAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutFootballTeam(int id, FootballTeam footballTeam)
+        public async Task<IActionResult> PutFootballTeam(int id, FootballTeamDTO footballTeam)
         {
-            if (id != footballTeam.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(footballTeam).State = EntityState.Modified;
+            FootballTeam teamToChange = _mapper.Map<FootballTeam>(footballTeam);
+            teamToChange.Id = id;
+            _context.Entry(teamToChange).State = EntityState.Detached;
+            _context.Teams.Update(teamToChange);
 
             try
             {
@@ -86,7 +88,7 @@ namespace FootballPredictionAPI.Controllers
             {
                 if (!FootballTeamExists(id))
                 {
-                    return NotFound();
+                    return NotFound("No team with that ID found");
                 }
                 else
                 {
@@ -119,10 +121,7 @@ namespace FootballPredictionAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFootballTeam(int id)
         {
-            if (_context.Teams == null)
-            {
-                return NotFound();
-            }
+
             var footballTeam = await _context.Teams.FindAsync(id);
             if (footballTeam == null)
             {
@@ -132,7 +131,7 @@ namespace FootballPredictionAPI.Controllers
             _context.Teams.Remove(footballTeam);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok($"{footballTeam.Name} has been removed");
         }
         
         private int CalculatePoints(FootballTeam footballTeam)
