@@ -28,17 +28,18 @@ namespace FootballPredictionAPI.Controllers
                 var fb = new FootballTeam
                 {
                     Name = "FC Barcelona",
-                    Points = 10,
                     MatchesWon = 3,
                     MatchesLost = 2,
                     MatchesDraw = 1,
+                    Points = 0,
                     Description = "Team from Barcelona"
                 };
+                fb.Points = CalculatePoints(fb);
                 _context.Teams.Add(fb);
                 _context.SaveChangesAsync();
             }
         }
-
+        
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FootballTeam>>> GetTeams()
         {
@@ -48,7 +49,7 @@ namespace FootballPredictionAPI.Controllers
           }
             return await _context.Teams.ToListAsync();
         }
-
+        
         [HttpGet("{id}")]
         public async Task<ActionResult<FootballTeam>> GetFootballTeam(int id)
         {
@@ -102,6 +103,12 @@ namespace FootballPredictionAPI.Controllers
           {
               return Problem("Entity set 'FootballTeamContext.Teams'  is null.");
           }
+
+          if (_context.Teams.FirstOrDefault(team => team.Name.ToLower().Equals(footballTeam.Name.ToLower())) != null)
+          {
+              return Problem("A team with that name is already in the list!");
+          }
+          footballTeam.Points = CalculatePoints(footballTeam);
             _context.Teams.Add(footballTeam);
             await _context.SaveChangesAsync();
 
@@ -126,10 +133,15 @@ namespace FootballPredictionAPI.Controllers
 
             return NoContent();
         }
-
+        
+        private int CalculatePoints(FootballTeam footballTeam)
+        {
+            return (footballTeam.MatchesWon * 3) + footballTeam.MatchesDraw;
+        }
         private bool FootballTeamExists(int id)
         {
             return (_context.Teams?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+        
     }
 }
