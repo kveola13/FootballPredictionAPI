@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddDbContext<FootballDB>(opt => opt.UseInMemoryDatabase("FootballTeams"));
+builder.Services.AddDbContext<FootballTeamContext>(opt => opt.UseInMemoryDatabase("FootballTeams"));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
