@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FootballPredictionAPI.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace FootballPredictionAPI.Models
+namespace FootballPredictionAPI.Context
 {
     public class FootballTeamContext : DbContext
     {
