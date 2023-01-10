@@ -1,5 +1,6 @@
-﻿/*  
+﻿ 
 using AutoMapper;
+using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Models;
 
 namespace FootballPredictionAPI
@@ -17,4 +18,3 @@ namespace FootballPredictionAPI
         }
     }
 }
-*/

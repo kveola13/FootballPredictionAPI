@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FootballPredictionAPI.Models;
+using FootballPredictionAPI.Context;
 
 namespace FootballPredictionAPI.Controllers
 {
