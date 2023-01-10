@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FootballPredictionAPI.Models;
+using System.Reflection.Emit;
 
 namespace FootballPredictionAPI.Controllers
 {
@@ -86,7 +87,7 @@ namespace FootballPredictionAPI.Controllers
             _context.FootballDBs.Add(footballTeam);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetFootballTeam", new { id = footballTeam.Id }, footballTeam);
+            return CreatedAtAction(nameof(FootballTeam), new { id = footballTeam.Id }, footballTeam);
         }
 
         [HttpDelete("{id}")]
