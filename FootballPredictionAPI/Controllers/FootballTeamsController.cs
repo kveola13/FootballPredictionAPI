@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using FootballPredictionAPI.Models;
 using FootballPredictionAPI.Context;
 using FootballPredictionAPI.DTOs;
+using FootballPredictionAPI.Interfaces;
 
 namespace FootballPredictionAPI.Controllers
 {
@@ -16,132 +17,110 @@ namespace FootballPredictionAPI.Controllers
     [ApiController]
     public class FootballTeamsController : ControllerBase
     {
-        private readonly FootballTeamContext _context;
+        private readonly IFootballRepository _repository;
         private readonly IMapper _mapper;
 
-        public FootballTeamsController(FootballTeamContext context, IMapper mapper)
-        {
-            _context = context;
+        public FootballTeamsController(IMapper mapper, IFootballRepository repository)
+        { 
             _mapper = mapper;
+            _repository = repository;
         }
 
         [HttpPost("seed")]
         public void SeedFootballTeam()
         {
-            if (_context.Teams.FirstOrDefault(fb=> fb.Name.ToLower().Equals("fc barcelona")) == null)
-            {
-                var fb = new FootballTeam
-                {
-                    Name = "FC Barcelona",
-                    MatchesWon = 3,
-                    MatchesLost = 2,
-                    MatchesDraw = 1,
-                    Points = 0,
-                    Description = "Team from Barcelona"
-                };
-                fb.Points = CalculatePoints(fb);
-                _context.Teams.Add(fb);
-                _context.SaveChangesAsync();
-            }
+            _repository.Seed();
         }
         
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FootballTeamDTO>>> GetTeams()
         {
-          if (_context.Teams == null)
-          {
-              return NotFound();
-          }
-             return Ok(_mapper.Map<IEnumerable<FootballTeamDTO>>(await _context.Teams.ToListAsync()));
+            return Ok(await _repository.GetFootballTeams());
         }
         
         [HttpGet("{id}")]
         public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(int id)
         {
-          if (_context.Teams == null)
-          {
-              return NotFound();
-          }
-            var footballTeam = _mapper.Map<FootballTeamDTO>(await _context.Teams.FindAsync(id));
-
-            if (footballTeam == null)
+            if (_repository.ListEmpty())
             {
-                return NotFound();
+                return NotFound("There are no teams in the list.");
             }
-
-            return footballTeam;
+            if (_repository.Exists<int>(id).Result == false)
+            {
+                return NotFound("No team with that id is in the list.");
+            }
+            return await _repository.GetFootballTeamById(id);
+        }
+        [HttpGet("getbyname/{name}")]
+        public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(string name)
+        {
+            if (_repository.ListEmpty())
+            {
+                return NotFound("There are no teams in the list.");
+            }
+            if (_repository.Exists<string>(name).Result == false)
+            {
+                return NotFound("No team with that name is in the list.");
+            }
+            return Ok(await _repository.GetFootballTeamByName(name));
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutFootballTeam(int id, FootballTeamDTO footballTeam)
         {
+            if (!await _repository.Exists<int>(id))
+            {
+                return NotFound("No team with that name found");
+            }
+
             FootballTeam teamToChange = _mapper.Map<FootballTeam>(footballTeam);
             teamToChange.Id = id;
-            _context.Entry(teamToChange).State = EntityState.Detached;
-            _context.Teams.Update(teamToChange);
+            bool success = _repository.UpdateFootballTeam(id, teamToChange).Result;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!FootballTeamExists(id))
-                {
-                    return NotFound("No team with that ID found");
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return success ? Ok("Changes has been made successfully") : Problem("Problem when trying to update the team in the database. Error.") ;
         }
 
         [HttpPost]
-        public async Task<ActionResult<FootballTeam>> PostFootballTeam(FootballTeam footballTeam)
+        public async Task<ActionResult<FootballTeam>>  PostFootballTeam(FootballTeamDTO footballTeam)
         {
-          if (_context.Teams == null)
+          if (!_repository.FootballTeamTableExists())
           {
               return Problem("Entity set 'FootballTeamContext.Teams'  is null.");
           }
 
-          if (_context.Teams.FirstOrDefault(team => team.Name.ToLower().Equals(footballTeam.Name.ToLower())) != null)
+          if (_repository.Exists<string>(footballTeam.Name).Result)
           {
               return Problem("A team with that name is already in the list!");
           }
-          footballTeam.Points = CalculatePoints(footballTeam);
-            _context.Teams.Add(footballTeam);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetFootballTeam), new { id = footballTeam.Id }, footballTeam);
+          FootballTeam teamToAdd = _mapper.Map<FootballTeam>(footballTeam);
+          teamToAdd.Points = _repository.CalculatePoints(teamToAdd);
+          bool success = await _repository.AddFootballTeam(teamToAdd);
+          return success ? Ok($"{footballTeam.Name} has been added to the list") : Problem("Problem when trying to add the team to the database. Error.");
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFootballTeam(int id)
         {
-
-            var footballTeam = await _context.Teams.FindAsync(id);
-            if (footballTeam == null)
+            if (!await _repository.Exists<int>(id))
             {
-                return NotFound();
+                return NotFound("No team with that id in the list");
             }
 
-            _context.Teams.Remove(footballTeam);
-            await _context.SaveChangesAsync();
+            bool success = await _repository.DeleteFootballTeamById(id);
+            return success ? Ok($"The team has been removed") : Problem("Problem when trying to remove the team from the database. Error.");
+        }
+        
+        [HttpDelete("deletebyname/{name}")]
+        public async Task<IActionResult> DeleteFootballTeam(string name)
+        {
+            if (!await _repository.Exists<string>(name))
+            {
+                return NotFound("No team with that name in the list");
+            }
 
-            return Ok($"{footballTeam.Name} has been removed");
+            bool success = await _repository.DeleteFootballTeamByName(name);
+            return success ? Ok($"The team has been removed") : Problem("Problem when trying to remove the team from the database. Error.");
         }
-        
-        private int CalculatePoints(FootballTeam footballTeam)
-        {
-            return (footballTeam.MatchesWon * 3) + footballTeam.MatchesDraw;
-        }
-        private bool FootballTeamExists(int id)
-        {
-            return (_context.Teams?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
-        
     }
 }
