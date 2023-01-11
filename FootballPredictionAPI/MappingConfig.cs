@@ -13,6 +13,8 @@ namespace FootballPredictionAPI
             {
                 config.CreateMap<FootballTeam, FootballTeamDTO>();
                 config.CreateMap<FootballTeamDTO, FootballTeam>();
+                config.CreateMap<CreateFootballTeamDTO, FootballTeam>();
+                config.CreateMap<FootballTeam, CreateFootballTeamDTO>();
             });
             return mappingConfig;
         }
