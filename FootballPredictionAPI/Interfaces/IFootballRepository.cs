@@ -13,7 +13,7 @@ public interface IFootballRepository
     Task<bool> DeleteFootballTeamById(int id);
     Task<bool> DeleteFootballTeamByName(string name);
     Task<bool> AddFootballTeam(FootballTeam footballTeam);
-    void Seed();
+    Task<FootballTeamDTO> Seed();
     Task<bool> Exists<T>(T id);
     int CalculatePoints(FootballTeam footballTeam);
     bool ListEmpty();
