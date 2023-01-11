@@ -3,7 +3,9 @@ using FootballPredictionAPI.Context;
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Interfaces;
 using FootballPredictionAPI.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace FootballPredictionAPI.Repositories;
@@ -68,11 +70,9 @@ public class FootballRepository : IFootballRepository
         return result > 0;
     }
 
-    public async void Seed()
+    public async Task<FootballTeamDTO> Seed()
     {
-        bool teamExists = await _context.Teams.AnyAsync(ft => ft.Name.ToLower().Equals("fc barcelona"));
-        if (!teamExists)
-        {
+        
             FootballTeam team = new FootballTeam
             {
                 Name = "FC Barcelona",
@@ -84,7 +84,8 @@ public class FootballRepository : IFootballRepository
             team.Points = CalculatePoints(team);
             await _context.Teams.AddAsync(team);
             await _context.SaveChangesAsync();
-        }
+            return _mapper.Map<FootballTeamDTO>(team);
+        
     }
 
     public async Task<bool> Exists<T>(T id)
