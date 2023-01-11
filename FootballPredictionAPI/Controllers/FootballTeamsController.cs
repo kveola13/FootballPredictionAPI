@@ -66,7 +66,7 @@ namespace FootballPredictionAPI.Controllers
         ***REMOVED***
 
         [HttpPut("{id***REMOVED***")]
-        public async Task<IActionResult> PutFootballTeam(int id, FootballTeamDTO footballTeam)
+        public async Task<IActionResult> PutFootballTeam(int id, CreateFootballTeamDTO footballTeam)
         {
             if (!await _repository.Exists<int>(id))
             {
@@ -81,7 +81,7 @@ namespace FootballPredictionAPI.Controllers
         ***REMOVED***
 
         [HttpPost]
-        public async Task<ActionResult<FootballTeam>>  PostFootballTeam(FootballTeamDTO footballTeam)
+        public async Task<ActionResult<FootballTeam>>  PostFootballTeam(CreateFootballTeamDTO footballTeam)
         {
           if (!_repository.FootballTeamTableExists())
           {
