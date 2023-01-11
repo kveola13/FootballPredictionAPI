@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -43,6 +44,23 @@ namespace FootballPredictionAPI.Controllers
         {
             return Ok(await _repository.GetFootballTeams());
         }
+
+        [HttpPut("updatewithresult/{team1}, {team2}, {result}")]
+        public async Task<ActionResult<IEnumerable<FootballTeamDTO>>> UppdateMatches(string team1, string team2, string result)
+        {
+            if (new List<string> { team1, team2, result }.Any(el => el is (null or "")))
+            {
+                return BadRequest();
+            }
+
+            if (!await _repository.Exists<string>(team1) && !await _repository.Exists<string>(team2))
+            {
+                return NotFound();
+            }
+
+            return Ok(await _repository.UpdateMatchesWIthResult(team1, team2, result));
+        }
+        
         
         [HttpGet("{id}")]
         public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(int id)

@@ -10,6 +10,7 @@ public interface IFootballRepository
     Task<FootballTeamDTO> GetFootballTeamById(int it);
     Task<FootballTeamDTO> GetFootballTeamByName(string name);
     Task<bool> UpdateFootballTeam(int id, FootballTeam footballTeamDto);
+    Task<IEnumerable<FootballTeamDTO>> UpdateMatchesWIthResult(string team1, string team2, string result);
     Task<bool> DeleteFootballTeamById(int id);
     Task<bool> DeleteFootballTeamByName(string name);
     Task<bool> AddFootballTeam(FootballTeam footballTeam);

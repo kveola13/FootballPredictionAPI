@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace FootballPredictionAPI.Repositories;
 
@@ -86,6 +87,37 @@ public class FootballRepository : IFootballRepository
             await _context.SaveChangesAsync();
             return _mapper.Map<FootballTeamDTO>(team);
         
+    }
+
+    public async Task<IEnumerable<FootballTeamDTO>> UpdateMatchesWIthResult(string team1, string team2, string result)
+    {
+        var t1 = _context.Teams.FirstOrDefaultAsync(t => t.Name.ToLower().Equals(team1.ToLower())).Result;
+        var t2 = _context.Teams.FirstOrDefaultAsync(t => t.Name.ToLower().Equals(team2.ToLower())).Result;
+        string[] res = result.Split(":");
+        if (int.Parse(res[0]) > int.Parse(res[1]))
+        {
+            t1.MatchesWon += 1;
+            t2.MatchesLost += 1;
+        } else if (int.Parse(res[0]) < int.Parse(res[1]))
+        {
+            t2.MatchesWon += 1;
+            t1.MatchesLost += 1;
+        }
+        else
+        {
+            t1.MatchesDraw += 1;
+            t2.MatchesDraw += 1;
+        }
+
+        t1.Points = CalculatePoints(t1);
+        t2.Points = CalculatePoints(t2);
+
+        _context.Teams.Update(t1);
+        _context.Teams.Update(t1);
+
+        await _context.SaveChangesAsync();
+        
+        return _mapper.Map<IEnumerable<FootballTeamDTO>>(new List<FootballTeam>{t1, t2});
     }
 
     public async Task<bool> Exists<T>(T id)
