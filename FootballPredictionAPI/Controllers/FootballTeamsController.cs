@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using FootballPredictionAPI.Models;
 using FootballPredictionAPI.Context;
 using FootballPredictionAPI.DTOs;
+using Microsoft.Azure.Cosmos.Linq;
 
 namespace FootballPredictionAPI.Controllers
 {
@@ -28,7 +29,7 @@ namespace FootballPredictionAPI.Controllers
         [HttpPost("seed")]
         public void SeedFootballTeam()
         {
-            if (_context.Teams.FirstOrDefault(fb=> fb.Name.ToLower().Equals("fc barcelona")) == null)
+            if (_context.Teams.FirstOrDefault(fb=> fb.Name!.ToLower().Equals("fc barcelona")) == null)
             {
                 var fb = new FootballTeam
                 {
@@ -107,7 +108,7 @@ namespace FootballPredictionAPI.Controllers
               return Problem("Entity set 'FootballTeamContext.Teams'  is null.");
           }
 
-          if (_context.Teams.FirstOrDefault(team => team.Name.ToLower().Equals(footballTeam.Name.ToLower())) != null)
+          if (_context.Teams.FirstOrDefault(team => team.Name!.ToLower().Equals(footballTeam.Name!.ToLower())) != null)
           {
               return Problem("A team with that name is already in the list!");
           }
