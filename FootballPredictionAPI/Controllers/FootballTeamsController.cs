@@ -27,9 +27,15 @@ namespace FootballPredictionAPI.Controllers
         }
 
         [HttpPost("seed")]
-        public void SeedFootballTeam()
+        public async Task<ActionResult<FootballTeamDTO>> SeedFootballTeam()
         {
-            _repository.Seed();
+            var teamExists = _repository.Exists<string>("fc barcelona").Result;
+            if (!teamExists)
+            {
+                return await _repository.Seed();
+            }
+
+            return Ok("Team already in!");
         }
         
         [HttpGet]
