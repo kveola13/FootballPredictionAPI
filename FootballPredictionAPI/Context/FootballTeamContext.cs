@@ -9,6 +9,5 @@ namespace FootballPredictionAPI.Context
     {
         public FootballTeamContext(DbContextOptions<FootballTeamContext> options) : base(options) { }
         public DbSet<FootballTeam> Teams { get; set; }
-        
     }
 }
