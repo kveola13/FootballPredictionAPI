@@ -52,6 +52,8 @@ namespace FootballPredictionAPI.Controllers
             {
                 return BadRequest();
             }
+            
+            // TO DO: validation for result syntax
 
             if (!await _repository.Exists<string>(team1) && !await _repository.Exists<string>(team2))
             {
