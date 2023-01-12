@@ -10,6 +10,7 @@ using FootballPredictionAPI.Models;
 using FootballPredictionAPI.Context;
 using FootballPredictionAPI.DTOs;
 using Microsoft.Azure.Cosmos.Linq;
+using Microsoft.Azure.Cosmos;
 
 namespace FootballPredictionAPI.Controllers
 {
@@ -19,11 +20,14 @@ namespace FootballPredictionAPI.Controllers
     {
         private readonly FootballTeamContext _context;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
+        private readonly string containerName = "teams";
 
-        public FootballTeamsController(FootballTeamContext context, IMapper mapper)
+        public FootballTeamsController(FootballTeamContext context, IMapper mapper, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
+            _configuration = configuration;
         }
 
         [HttpPost("seed")]
@@ -53,7 +57,29 @@ namespace FootballPredictionAPI.Controllers
           {
               return NotFound();
           }
-             return Ok(_mapper.Map<IEnumerable<FootballTeamDTO>>(await _context.Teams.ToListAsync()));
+            var dbName = _configuration["ConnectionStrings:DATABASE_NAME"]!;
+            var accountEndpoint = _configuration["ConnectionStrings:COSMOS_ENDPOINT"]!;
+            var accountKey = _configuration["ConnectionStrings:COSMOS_KEY"]!;
+
+            using CosmosClient client = new
+            (
+                accountEndpoint: accountEndpoint,
+                authKeyOrResourceToken: accountKey!
+            );
+            var container = client.GetContainer(dbName, containerName);
+            using FeedIterator<FootballTeamDTO> feed = container.GetItemQueryIterator<FootballTeamDTO>(
+                queryText: "SELECT * FROM c"
+            );
+            List<FootballTeamDTO> teams = new();
+            while (feed.HasMoreResults)
+            {
+                FeedResponse<FootballTeamDTO> response = await feed.ReadNextAsync();
+                foreach (FootballTeamDTO teamDTO in response)
+                {
+                    teams.Add(teamDTO);
+                }
+            }
+            return Ok(teams);
         }
         
         [HttpGet("{id}")]
@@ -74,7 +100,7 @@ namespace FootballPredictionAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutFootballTeam(int id, FootballTeamDTO footballTeam)
+        public async Task<IActionResult> PutFootballTeam(string id, FootballTeamDTO footballTeam)
         {
             FootballTeam teamToChange = _mapper.Map<FootballTeam>(footballTeam);
             teamToChange.Id = id;
@@ -139,9 +165,9 @@ namespace FootballPredictionAPI.Controllers
         {
             return (footballTeam.MatchesWon * 3) + footballTeam.MatchesDraw;
         }
-        private bool FootballTeamExists(int id)
+        private bool FootballTeamExists(string id)
         {
-            return (_context.Teams?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Teams?.Any(e => e.Id!.Equals(id))).GetValueOrDefault();
         }
         
     }
