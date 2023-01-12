@@ -55,7 +55,7 @@ namespace FootballPredictionAPI.Controllers
             
             // TO DO: validation for result syntax
 
-            if (!await _repository.Exists<string>(team1) && !await _repository.Exists<string>(team2))
+            if (!await _repository.Exists<string>(team1) || !await _repository.Exists<string>(team2))
             {
                 return NotFound();
             }
