@@ -5,6 +5,7 @@ using AutoMapper;
 using FootballPredictionAPI;
 using FootballPredictionAPI.Context;
 using Microsoft.Azure.Cosmos;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,11 +13,15 @@ var builder = WebApplication.CreateBuilder(args);
 var dbName = "FootballTeams";
 builder.Services.AddControllers();
 using CosmosClient client = new(
-    accountEndpoint: builder.Configuration.GetConnectionString("COSMOS_ENDPOINT")!, 
+    accountEndpoint: builder.Configuration.GetConnectionString("COSMOS_ENDPOINT")!,
     authKeyOrResourceToken: builder.Configuration.GetConnectionString("COSMOS_KEY")!
     );
+Database database = client.GetDatabase(id: dbName);
+Console.WriteLine($"Created a new database {database.Id}");
+Console.WriteLine($"Getting container: {database.GetContainer("Teams").Id}");
+Container container = database.GetContainer(id: dbName);
 //builder.Services.AddDbContext<FootballTeamContext>(optionsAction => optionsAction.UseCosmos(connection, dbName));
-builder.Services.AddDbContext<FootballTeamContext>(opt => opt.UseInMemoryDatabase(dbName));
+//builder.Services.AddDbContext<FootballTeamContext>(opt => opt.UseInMemoryDatabase(dbName));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
