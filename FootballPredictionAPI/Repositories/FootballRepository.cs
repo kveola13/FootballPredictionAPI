@@ -69,23 +69,21 @@ public class FootballRepository : IFootballRepository
         int result = await _context.SaveChangesAsync();
         return result > 0;
     }
-
+    
     public async Task<IEnumerable<FootballTeamDTO>> Seed()
     {
-        string[] footballTeamsNames = new[] { "Real Madrid", "Real Sociedad", "Real Betis", 
-            "Atletico Madrid", "Villareal", "Athletico Bilbao", "Valencia FC", "Fc Barcelona", "Sevilla FC" };
-
+        string path = "Data/laliga21-22.csv";
+       
+        string[] lines = await System.IO.File.ReadAllLinesAsync(path);
+        var teamsData = lines.Skip(1);
         List<FootballTeam> teams = new List<FootballTeam>();
-
-        Random r = new Random();
-        foreach (string ftName in footballTeamsNames)
+        foreach (string line in teamsData)
         {
-            int wins = r.Next(7);
-            Console.WriteLine(wins);
-            int lost = r.Next(7-wins);
-            Console.WriteLine(lost);
-            int draw = r.Next(7-wins-lost);
-            Console.WriteLine(draw);
+            string[] columns = line.Split(",");
+            string ftName = columns[1];
+            int wins = int.Parse(columns[3]);
+            int lost = int.Parse(columns[5]);
+            int draw = int.Parse(columns[4]);
             FootballTeam team = new FootballTeam
             {
                 Name = ftName,
@@ -101,7 +99,6 @@ public class FootballRepository : IFootballRepository
         
         await _context.SaveChangesAsync();
         
-        //var teams = await _context.Teams.ToListAsync();
         return _mapper.Map<IEnumerable<FootballTeamDTO>>(teams);
         
     }
