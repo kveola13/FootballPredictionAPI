@@ -33,9 +33,9 @@ namespace FootballPredictionAPI.Controllers
         [HttpPost("seed")]
         public void SeedFootballTeam()
         {
-            if (_context.Teams.FirstOrDefault(fb=> fb.Name!.ToLower().Equals("fc barcelona")) == null)
+            if (_context.Teams.FirstOrDefault(fb => fb.Name!.ToLower().Equals("fc barcelona")) == null)
             {
-                var fb = new FootballTeam
+                var fb = new FootballTeamDTO
                 {
                     Name = "FC Barcelona",
                     MatchesWon = 3,
@@ -44,59 +44,55 @@ namespace FootballPredictionAPI.Controllers
                     Points = 0,
                     Description = "Team from Barcelona"
                 };
-                fb.Points = CalculatePoints(fb);
-                _context.Teams.Add(fb);
+                fb.Points = CalculatePoints(_mapper.Map<FootballTeam>(fb));
+                _context.Teams.Add(_mapper.Map<FootballTeam>(fb));
                 _context.SaveChangesAsync();
             }
         }
-        
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FootballTeamDTO>>> GetTeams()
         {
-          if (_context.Teams == null)
-          {
-              return NotFound();
-          }
-            var dbName = _configuration["ConnectionStrings:DATABASE_NAME"]!;
-            var accountEndpoint = _configuration["ConnectionStrings:COSMOS_ENDPOINT"]!;
-            var accountKey = _configuration["ConnectionStrings:COSMOS_KEY"]!;
-
-            using CosmosClient client = new
-            (
-                accountEndpoint: accountEndpoint,
-                authKeyOrResourceToken: accountKey!
-            );
-            var container = client.GetContainer(dbName, containerName);
-            using FeedIterator<FootballTeamDTO> feed = container.GetItemQueryIterator<FootballTeamDTO>(
+            CreateDatabaseConnection(out _, out Container container);
+            using FeedIterator<FootballTeam> feed = container.GetItemQueryIterator<FootballTeam>(
                 queryText: "SELECT * FROM c"
             );
+            if (!feed.HasMoreResults)
+            {
+                return NotFound("No teams found in database");
+            }
             List<FootballTeamDTO> teams = new();
             while (feed.HasMoreResults)
             {
-                FeedResponse<FootballTeamDTO> response = await feed.ReadNextAsync();
-                foreach (FootballTeamDTO teamDTO in response)
+                FeedResponse<FootballTeam> response = await feed.ReadNextAsync();
+                foreach (FootballTeam teamDTO in response)
                 {
-                    teams.Add(teamDTO);
+                    Console.WriteLine($"Team found: {teamDTO.Id}");
+                    teams.Add(_mapper.Map<FootballTeamDTO>(teamDTO));
                 }
             }
             return Ok(teams);
         }
-        
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(int id)
+        public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(string id)
         {
-          if (_context.Teams == null)
-          {
-              return NotFound();
-          }
-            var footballTeam = _mapper.Map<FootballTeamDTO>(await _context.Teams.FindAsync(id));
-
-            if (footballTeam == null)
+            CreateDatabaseConnection(out _, out Container container);
+            IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
+            var matches = queryable
+            .Where(fb => fb!.Id!.Equals(id));
+            using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
+            while (linqFeed.HasMoreResults)
             {
-                return NotFound();
+                FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
+                foreach (FootballTeam team in response)
+                {
+                    Console.WriteLine($"Found team: {team.Name} with id: {team.Id}");
+                    var teamDto = _mapper.Map<FootballTeamDTO>(team);
+                    return Ok(teamDto);
+                }
             }
-
-            return footballTeam;
+            return NotFound("No such team found in database");
         }
 
         [HttpPut("{id}")]
@@ -127,22 +123,14 @@ namespace FootballPredictionAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<FootballTeam>> PostFootballTeam(FootballTeam footballTeam)
+        public async Task<ActionResult<FootballTeamDTO>> PostFootballTeam(FootballTeam footballTeam)
         {
-          if (_context.Teams == null)
-          {
-              return Problem("Entity set 'FootballTeamContext.Teams'  is null.");
-          }
+            CreateDatabaseConnection(out _, out Container container);
+            
+            footballTeam.Points = CalculatePoints(footballTeam);
+            await container.CreateItemAsync(footballTeam!);
 
-          if (_context.Teams.FirstOrDefault(team => team.Name!.ToLower().Equals(footballTeam.Name!.ToLower())) != null)
-          {
-              return Problem("A team with that name is already in the list!");
-          }
-          footballTeam.Points = CalculatePoints(footballTeam);
-            _context.Teams.Add(footballTeam);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetFootballTeam), new { id = footballTeam.Id }, footballTeam);
+            return CreatedAtAction(nameof(GetFootballTeam), new { id = "testing" },_mapper.Map<FootballTeamDTO>(footballTeam));
         }
 
         [HttpDelete("{id}")]
@@ -160,8 +148,8 @@ namespace FootballPredictionAPI.Controllers
 
             return Ok($"{footballTeam.Name} has been removed");
         }
-        
-        private int CalculatePoints(FootballTeam footballTeam)
+
+        private static int CalculatePoints(FootballTeam footballTeam)
         {
             return (footballTeam.MatchesWon * 3) + footballTeam.MatchesDraw;
         }
@@ -169,6 +157,18 @@ namespace FootballPredictionAPI.Controllers
         {
             return (_context.Teams?.Any(e => e.Id!.Equals(id))).GetValueOrDefault();
         }
-        
+        private void CreateDatabaseConnection(out CosmosClient client, out Container container)
+        {
+            var dbName = _configuration["ConnectionStrings:DATABASE_NAME"]!;
+            var accountEndpoint = _configuration["ConnectionStrings:COSMOS_ENDPOINT"]!;
+            var accountKey = _configuration["ConnectionStrings:COSMOS_KEY"]!;
+            client = new
+            (
+                accountEndpoint: accountEndpoint,
+                authKeyOrResourceToken: accountKey!
+            );
+            container = client.GetContainer(dbName, containerName);
+        }
+
     }
 }

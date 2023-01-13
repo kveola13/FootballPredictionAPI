@@ -1,7 +1,10 @@
-﻿namespace FootballPredictionAPI.Models
+﻿using Newtonsoft.Json;
+
+namespace FootballPredictionAPI.Models
 {
     public class FootballTeam
     {
+        [JsonProperty(PropertyName = "id")]
         public string? Id { get; set; }
         public string? Name { get; set; }
         public int Points { get; set; }
