@@ -70,21 +70,39 @@ public class FootballRepository : IFootballRepository
         return result > 0;
     ***REMOVED***
 
-    public async Task<FootballTeamDTO> Seed()
+    public async Task<IEnumerable<FootballTeamDTO>> Seed()
     {
-        
+        string[] footballTeamsNames = new[] { "Real Madrid", "Real Sociedad", "Real Betis", 
+            "Atletico Madrid", "Villareal", "Athletico Bilbao", "Valencia FC", "Fc Barcelona", "Sevilla FC" ***REMOVED***;
+
+        List<FootballTeam> teams = new List<FootballTeam>();
+
+        Random r = new Random();
+        foreach (string ftName in footballTeamsNames)
+        {
+            int wins = r.Next(7);
+            Console.WriteLine(wins);
+            int lost = r.Next(7-wins);
+            Console.WriteLine(lost);
+            int draw = r.Next(7-wins-lost);
+            Console.WriteLine(draw);
             FootballTeam team = new FootballTeam
             {
-                Name = "FC Barcelona",
-                MatchesWon = 3,
-                MatchesLost = 2,
-                MatchesDraw = 1,
-                Description = "Team located in spain"
+                Name = ftName,
+                MatchesWon = wins,
+                MatchesLost = lost,
+                MatchesDraw = draw,
+                Description = "Team located in Spain"
             ***REMOVED***;
             team.Points = CalculatePoints(team);
+            teams.Add(team);
             await _context.Teams.AddAsync(team);
-            await _context.SaveChangesAsync();
-            return _mapper.Map<FootballTeamDTO>(team);
+        ***REMOVED***
+        
+        await _context.SaveChangesAsync();
+        
+        //var teams = await _context.Teams.ToListAsync();
+        return _mapper.Map<IEnumerable<FootballTeamDTO>>(teams);
         
     ***REMOVED***
 
