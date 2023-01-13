@@ -10,6 +10,7 @@ using FootballPredictionAPI.Models;
 using FootballPredictionAPI.Context;
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Interfaces;
+using Microsoft.Azure.Cosmos;
 
 namespace FootballPredictionAPI.Controllers
 {
@@ -21,7 +22,7 @@ namespace FootballPredictionAPI.Controllers
         private readonly IMapper _mapper;
 
         public FootballTeamsController(IMapper mapper, IFootballRepository repository)
-        { 
+        {
             _mapper = mapper;
             _repository = repository;
         ***REMOVED***
@@ -45,26 +46,26 @@ namespace FootballPredictionAPI.Controllers
         ***REMOVED***
         
         [HttpGet("{id***REMOVED***")]
-        public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(int id)
+        public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(string id)
         {
             if (_repository.ListEmpty())
             {
                 return NotFound("There are no teams in the list.");
             ***REMOVED***
-            if (_repository.Exists<int>(id).Result == false)
+            if (_repository.GetFootballTeamById(id).Result != null)
             {
                 return NotFound("No team with that id is in the list.");
             ***REMOVED***
             return await _repository.GetFootballTeamById(id);
         ***REMOVED***
         [HttpGet("getbyname/{name***REMOVED***")]
-        public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(string name)
+        public async Task<ActionResult<FootballTeamDTO>> GetFootballTeamByName(string name)
         {
             if (_repository.ListEmpty())
             {
                 return NotFound("There are no teams in the list.");
             ***REMOVED***
-            if (_repository.Exists<string>(name).Result == false)
+            if (_repository.GetFootballTeamByName(name).Result != null)
             {
                 return NotFound("No team with that name is in the list.");
             ***REMOVED***
@@ -72,9 +73,9 @@ namespace FootballPredictionAPI.Controllers
         ***REMOVED***
 
         [HttpPut("{id***REMOVED***")]
-        public async Task<IActionResult> PutFootballTeam(int id, CreateFootballTeamDTO footballTeam)
+        public async Task<IActionResult> PutFootballTeam(string id, CreateFootballTeamDTO footballTeam)
         {
-            if (!await _repository.Exists<int>(id))
+            if (await _repository.GetFootballTeamById(id) == null)
             {
                 return NotFound("No team with that name found");
             ***REMOVED***
@@ -87,14 +88,14 @@ namespace FootballPredictionAPI.Controllers
         ***REMOVED***
 
         [HttpPost]
-        public async Task<ActionResult<FootballTeam>>  PostFootballTeam(CreateFootballTeamDTO footballTeam)
+        public async Task<ActionResult<FootballTeam>>PostFootballTeam(CreateFootballTeamDTO footballTeam)
         {
           if (!_repository.FootballTeamTableExists())
           {
               return Problem("Entity set 'FootballTeamContext.Teams'  is null.");
           ***REMOVED***
 
-          if (_repository.Exists<string>(footballTeam.Name).Result)
+          if (_repository.GetFootballTeamByName(footballTeam.Name!) != null)
           {
               return Problem("A team with that name is already in the list!");
           ***REMOVED***
@@ -106,9 +107,9 @@ namespace FootballPredictionAPI.Controllers
         ***REMOVED***
 
         [HttpDelete("{id***REMOVED***")]
-        public async Task<IActionResult> DeleteFootballTeam(int id)
+        public async Task<IActionResult> DeleteFootballTeam(string id)
         {
-            if (!await _repository.Exists<int>(id))
+            if (await _repository.GetFootballTeamById(id) == null)
             {
                 return NotFound("No team with that id in the list");
             ***REMOVED***
@@ -118,9 +119,9 @@ namespace FootballPredictionAPI.Controllers
         ***REMOVED***
         
         [HttpDelete("deletebyname/{name***REMOVED***")]
-        public async Task<IActionResult> DeleteFootballTeam(string name)
+        public async Task<IActionResult> DeleteFootballTeamByName(string name)
         {
-            if (!await _repository.Exists<string>(name))
+            if (await _repository.GetFootballTeamByName(name) == null)
             {
                 return NotFound("No team with that name in the list");
             ***REMOVED***
