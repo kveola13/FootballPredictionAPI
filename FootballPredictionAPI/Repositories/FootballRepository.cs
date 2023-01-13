@@ -69,22 +69,37 @@ public class FootballRepository : IFootballRepository
         int result = await _context.SaveChangesAsync();
         return result > 0;
     ***REMOVED***
-
-    public async Task<FootballTeamDTO> Seed()
+    
+    public async Task<IEnumerable<FootballTeamDTO>> Seed()
     {
-        
+        string path = "Data/laliga21-22.csv";
+       
+        string[] lines = await System.IO.File.ReadAllLinesAsync(path);
+        var teamsData = lines.Skip(1);
+        List<FootballTeam> teams = new List<FootballTeam>();
+        foreach (string line in teamsData)
+        {
+            string[] columns = line.Split(",");
+            string ftName = columns[1];
+            int wins = int.Parse(columns[3]);
+            int lost = int.Parse(columns[5]);
+            int draw = int.Parse(columns[4]);
             FootballTeam team = new FootballTeam
             {
-                Name = "FC Barcelona",
-                MatchesWon = 3,
-                MatchesLost = 2,
-                MatchesDraw = 1,
-                Description = "Team located in spain"
+                Name = ftName,
+                MatchesWon = wins,
+                MatchesLost = lost,
+                MatchesDraw = draw,
+                Description = $"Team located in Spain: {ftName***REMOVED***"
             ***REMOVED***;
             team.Points = CalculatePoints(team);
+            teams.Add(team);
             await _context.Teams.AddAsync(team);
-            await _context.SaveChangesAsync();
-            return _mapper.Map<FootballTeamDTO>(team);
+        ***REMOVED***
+        
+        await _context.SaveChangesAsync();
+        
+        return _mapper.Map<IEnumerable<FootballTeamDTO>>(teams);
         
     ***REMOVED***
 
