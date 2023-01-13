@@ -92,7 +92,7 @@ public class FootballRepository : IFootballRepository
                 MatchesWon = wins,
                 MatchesLost = lost,
                 MatchesDraw = draw,
-                Description = "Team located in Spain"
+                Description = $"Team located in Spain: {ftName}"
             };
             team.Points = CalculatePoints(team);
             teams.Add(team);
