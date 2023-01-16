@@ -1,21 +1,20 @@
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Cosmos;
 
 namespace FootballPredictionAPI.Interfaces;
 
 public interface IFootballRepository
 {
-    Task<IEnumerable<FootballTeamDTO>> GetFootballTeams();
-    Task<FootballTeamDTO> GetFootballTeamById(string id);
-    Task<FootballTeamDTO> GetFootballTeamByName(string name);
+    Task<IEnumerable<FootballTeamDTO?>> GetFootballTeams();
+    Task<FootballTeamDTO?> GetFootballTeamById(string id);
+    Task<FootballTeamDTO?> GetFootballTeamByName(string name);
     Task<bool> UpdateFootballTeam(string id, FootballTeam footballTeamDto);
+    Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeam);
     Task<bool> DeleteFootballTeamById(string id);
     Task<bool> DeleteFootballTeamByName(string name);
-    Task<bool> AddFootballTeam(FootballTeam footballTeam);
+    [Obsolete("This will no longer be needed after a CosmosDB integration")]
     Task<IEnumerable<FootballTeamDTO>> Seed();
     int CalculatePoints(FootballTeam footballTeam);
-    bool ListEmpty();
+    [Obsolete("Not needed after update")]
     bool FootballTeamTableExists();
 ***REMOVED***

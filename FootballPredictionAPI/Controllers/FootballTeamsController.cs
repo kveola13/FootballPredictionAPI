@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using FootballPredictionAPI.Models;
-using FootballPredictionAPI.Context;
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Interfaces;
-using Microsoft.Azure.Cosmos;
 
 namespace FootballPredictionAPI.Controllers
 {
@@ -27,10 +19,12 @@ namespace FootballPredictionAPI.Controllers
             _repository = repository;
         ***REMOVED***
 
+        [Obsolete("This will no longer be needed after a CosmosDB integration")]
         [HttpPost("seed")]
         public async Task<ActionResult<IEnumerable<FootballTeamDTO>>> SeedFootballTeam()
         {
-            var teamExists = !_repository.ListEmpty();
+            //Added a failsafe to this before confirmed removal.
+            var teamExists = true;
             if (!teamExists)
             {
                 return Ok(await _repository.Seed());
@@ -38,73 +32,64 @@ namespace FootballPredictionAPI.Controllers
 
             return Ok("Seed already in!");
         ***REMOVED***
-        
+
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FootballTeamDTO>>> GetTeams()
         {
             return Ok(await _repository.GetFootballTeams());
         ***REMOVED***
-        
+
         [HttpGet("{id***REMOVED***")]
         public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(string id)
         {
-            if (_repository.ListEmpty())
-            {
-                return NotFound("There are no teams in the list.");
-            ***REMOVED***
-            if (_repository.GetFootballTeamById(id).Result != null)
+            var team = _repository.GetFootballTeamById(id);
+            if (team.Result == null)
             {
                 return NotFound("No team with that id is in the list.");
             ***REMOVED***
-            return await _repository.GetFootballTeamById(id);
+            return Ok(await team!);
         ***REMOVED***
+
         [HttpGet("getbyname/{name***REMOVED***")]
         public async Task<ActionResult<FootballTeamDTO>> GetFootballTeamByName(string name)
         {
-            if (_repository.ListEmpty())
+            var team = _repository.GetFootballTeamByName(name);
+            if (team.Result == null)
             {
-                return NotFound("There are no teams in the list.");
+                return NotFound("No team with that id is in the list.");
             ***REMOVED***
-            if (_repository.GetFootballTeamByName(name).Result != null)
-            {
-                return NotFound("No team with that name is in the list.");
-            ***REMOVED***
-            return Ok(await _repository.GetFootballTeamByName(name));
+            return Ok(await team!);
         ***REMOVED***
 
         [HttpPut("{id***REMOVED***")]
-        public async Task<IActionResult> PutFootballTeam(string id, CreateFootballTeamDTO footballTeam)
+        public async Task<IActionResult> PutFootballTeam(string id, FootballTeamDTO footballTeam)
         {
-            if (await _repository.GetFootballTeamById(id) == null)
+            var teamToUpdate = await _repository.GetFootballTeamById(id);
+            if (teamToUpdate == null)
             {
-                return NotFound("No team with that name found");
+                return NotFound("No team with that id found");
             ***REMOVED***
 
             FootballTeam teamToChange = _mapper.Map<FootballTeam>(footballTeam);
             teamToChange.Id = id;
             bool success = _repository.UpdateFootballTeam(id, teamToChange).Result;
 
-            return success ? Ok("Changes has been made successfully") : Problem("Problem when trying to update the team in the database. Error.") ;
+            return success ? Ok("Changes has been made successfully") : Problem("Problem when trying to update the team in the database. Error.");
         ***REMOVED***
+
 
         [HttpPost]
-        public async Task<ActionResult<FootballTeam>>PostFootballTeam(CreateFootballTeamDTO footballTeam)
+        public async Task<ActionResult<FootballTeam>> PostFootballTeam(FootballTeamDTO footballTeam)
         {
-          if (!_repository.FootballTeamTableExists())
-          {
-              return Problem("Entity set 'FootballTeamContext.Teams'  is null.");
-          ***REMOVED***
-
-          if (_repository.GetFootballTeamByName(footballTeam.Name!) != null)
-          {
-              return Problem("A team with that name is already in the list!");
-          ***REMOVED***
-
-          FootballTeam teamToAdd = _mapper.Map<FootballTeam>(footballTeam);
-          teamToAdd.Points = _repository.CalculatePoints(teamToAdd);
-          bool success = await _repository.AddFootballTeam(teamToAdd);
-          return success ? Ok($"{footballTeam.Name***REMOVED*** has been added to the list") : Problem("Problem when trying to add the team to the database. Error.");
+            if (_repository.GetFootballTeamByName(footballTeam.Name!).Result != null)
+            {
+                return Problem("A team with that name is already in the list!");
+            ***REMOVED***
+            var postedTeam = await _repository.AddFootballTeam(footballTeam);
+            return Ok(_mapper.Map<FootballTeamDTO>(postedTeam));
         ***REMOVED***
+
 
         [HttpDelete("{id***REMOVED***")]
         public async Task<IActionResult> DeleteFootballTeam(string id)
@@ -117,7 +102,7 @@ namespace FootballPredictionAPI.Controllers
             bool success = await _repository.DeleteFootballTeamById(id);
             return success ? Ok($"The team has been removed") : Problem("Problem when trying to remove the team from the database. Error.");
         ***REMOVED***
-        
+
         [HttpDelete("deletebyname/{name***REMOVED***")]
         public async Task<IActionResult> DeleteFootballTeamByName(string name)
         {
