@@ -69,7 +69,7 @@ public class FootballRepository : IFootballRepository
         return null;
     ***REMOVED***
 
-    public async Task<bool> UpdateFootballTeam(string id, FootballTeam footballTeam)
+    public async Task<FootballTeam?> UpdateFootballTeam(string id, FootballTeam footballTeam)
     {
         CreateDatabaseConnection(out _, out Container container);
         IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
@@ -90,9 +90,9 @@ public class FootballRepository : IFootballRepository
                 Description = footballTeam.Description,
             ***REMOVED***;
             await container.UpsertItemAsync(team);
-            return true;
+            return team;
         ***REMOVED***
-        return false;
+        return null;
     ***REMOVED***
 
     public async Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeam)
@@ -105,7 +105,7 @@ public class FootballRepository : IFootballRepository
         return createTeam;
     ***REMOVED***
 
-    public async Task<bool> DeleteFootballTeamById(string id)
+    public async Task<FootballTeam?> DeleteFootballTeamById(string id)
     {
         CreateDatabaseConnection(out _, out Container container);
         IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
@@ -117,12 +117,12 @@ public class FootballRepository : IFootballRepository
             FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
             var team = response.FirstOrDefault();
             await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
-            return true;
+            return team;
         ***REMOVED***
-        return false;
+        return null;
     ***REMOVED***
 
-    public async Task<bool> DeleteFootballTeamByName(string name)
+    public async Task<FootballTeam?> DeleteFootballTeamByName(string name)
     {
         CreateDatabaseConnection(out _, out Container container);
         IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
@@ -134,9 +134,9 @@ public class FootballRepository : IFootballRepository
             FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
             var team = response.FirstOrDefault();
             await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
-            return true;
+            return team;
         ***REMOVED***
-        return false;
+        return null;
     ***REMOVED***
 
     [Obsolete("This will no longer be needed after a CosmosDB integration")]

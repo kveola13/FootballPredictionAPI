@@ -63,7 +63,7 @@ namespace FootballPredictionAPI.Controllers
         ***REMOVED***
 
         [HttpPut("{id***REMOVED***")]
-        public async Task<IActionResult> PutFootballTeam(string id, FootballTeamDTO footballTeam)
+        public async Task<ActionResult<FootballTeamDTO>> PutFootballTeam(string id, FootballTeamDTO footballTeam)
         {
             var teamToUpdate = await _repository.GetFootballTeamById(id);
             if (teamToUpdate == null)
@@ -73,9 +73,7 @@ namespace FootballPredictionAPI.Controllers
 
             FootballTeam teamToChange = _mapper.Map<FootballTeam>(footballTeam);
             teamToChange.Id = id;
-            bool success = _repository.UpdateFootballTeam(id, teamToChange).Result;
-
-            return success ? Ok("Changes has been made successfully") : Problem("Problem when trying to update the team in the database. Error.");
+            return Ok(_repository.UpdateFootballTeam(id, teamToChange));
         ***REMOVED***
 
 
@@ -92,27 +90,25 @@ namespace FootballPredictionAPI.Controllers
 
 
         [HttpDelete("{id***REMOVED***")]
-        public async Task<IActionResult> DeleteFootballTeam(string id)
+        public async Task<ActionResult<FootballTeam>> DeleteFootballTeam(string id)
         {
             if (await _repository.GetFootballTeamById(id) == null)
             {
                 return NotFound("No team with that id in the list");
             ***REMOVED***
 
-            bool success = await _repository.DeleteFootballTeamById(id);
-            return success ? Ok($"The team has been removed") : Problem("Problem when trying to remove the team from the database. Error.");
+            return Ok(await _repository.DeleteFootballTeamById(id));
         ***REMOVED***
 
         [HttpDelete("deletebyname/{name***REMOVED***")]
-        public async Task<IActionResult> DeleteFootballTeamByName(string name)
+        public async Task<ActionResult<FootballTeam>> DeleteFootballTeamByName(string name)
         {
             if (await _repository.GetFootballTeamByName(name) == null)
             {
                 return NotFound("No team with that name in the list");
             ***REMOVED***
 
-            bool success = await _repository.DeleteFootballTeamByName(name);
-            return success ? Ok($"The team has been removed") : Problem("Problem when trying to remove the team from the database. Error.");
+            return Ok(await _repository.DeleteFootballTeamByName(name));
         ***REMOVED***
     ***REMOVED***
 ***REMOVED***
