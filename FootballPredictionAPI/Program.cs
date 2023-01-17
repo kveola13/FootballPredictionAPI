@@ -4,6 +4,10 @@ using FootballPredictionAPI;
 using FootballPredictionAPI.Context;
 using FootballPredictionAPI.Interfaces;
 using FootballPredictionAPI.Repositories;
+using Microsoft.Azure.KeyVault;
+using Microsoft.AspNetCore.Authentication;
+using Azure.Security.KeyVault.Secrets;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
