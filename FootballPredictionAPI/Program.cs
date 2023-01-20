@@ -11,6 +11,9 @@ using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var keyVaultEndpoint = new Uri(builder.Configuration["Keyvault:VaultUri"]!);
+builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential());
+
 var dbName = builder.Configuration["ConnectionStrings:DATABASE_NAME"]!;
 var accountEndpoint = builder.Configuration.GetConnectionString("COSMOS_ENDPOINT")!;
 var accountKey = builder.Configuration.GetConnectionString("COSMOS_KEY")!;
