@@ -1,4 +1,6 @@
 using AutoMapper;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using FootballPredictionAPI.Context;
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Interfaces;
@@ -185,9 +187,11 @@ public class FootballRepository : IFootballRepository
 
     private void CreateDatabaseConnection(out CosmosClient client, out Container container)
     {
-        var dbName = _configuration["ConnectionStrings:DATABASE_NAME"]!;
-        var accountEndpoint = _configuration["ConnectionStrings:COSMOS_ENDPOINT"]!;
-        var accountKey = _configuration["ConnectionStrings:COSMOS_KEY"]!;
+        var keyVaultEndpoint = new Uri(_configuration["Keyvault:VaultUri"]!);
+        var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
+        var accountEndpoint = secretClient.GetSecretAsync("CosmosDBEndpoint").Result.Value.Value;
+        var accountKey = secretClient.GetSecretAsync("CosmosDBKey").Result.Value.Value;
+        var dbName = secretClient.GetSecretAsync("DatabaseName").Result.Value.Value;
         client = new
         (
             accountEndpoint: accountEndpoint,

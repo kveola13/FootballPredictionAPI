@@ -8,15 +8,16 @@ using Microsoft.Azure.KeyVault;
 using Microsoft.AspNetCore.Authentication;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Identity;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var keyVaultEndpoint = new Uri(builder.Configuration["Keyvault:VaultUri"]!);
 builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential());
-
-var dbName = builder.Configuration["ConnectionStrings:DATABASE_NAME"]!;
-var accountEndpoint = builder.Configuration.GetConnectionString("COSMOS_ENDPOINT")!;
-var accountKey = builder.Configuration.GetConnectionString("COSMOS_KEY")!;
+var client = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
+var accountEndpoint = client.GetSecretAsync("CosmosDBEndpoint").Result.Value.Value;
+var accountKey = client.GetSecretAsync("CosmosDBKey").Result.Value.Value;
+var dbName = client.GetSecretAsync("DatabaseName").Result.Value.Value;
 builder.Services.AddControllers();
 builder.Services.AddDbContext<FootballTeamContext>(optionsAction => optionsAction.UseCosmos(accountEndpoint!, accountKey!, dbName!));
 builder.Services.AddEndpointsApiExplorer();
