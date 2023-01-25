@@ -110,5 +110,12 @@ namespace FootballPredictionAPI.Controllers
 
             return Ok(await _repository.DeleteFootballTeamByName(name));
         ***REMOVED***
+
+        [Obsolete("Not needed after population is done")]
+        public async Task PopulateTeams()
+        {
+            await _repository.PopulateTeams();
+        ***REMOVED***
+        
     ***REMOVED***
 ***REMOVED***

@@ -216,8 +216,8 @@ public class FootballRepository : IFootballRepository
 
     ***REMOVED***
     
-    [Obsolete("This will no longer be needed after a CosmosDB population")]
-    public async Task<IEnumerable<FootballTeamDTO>> PopulateTeams()
+    [Obsolete("This will no longer be needed after CosmosDB population")]
+    public async Task<object> PopulateTeams()
     {
         // Check if container exists, create if not
         List<FootballTeam> teams = new List<FootballTeam>();
