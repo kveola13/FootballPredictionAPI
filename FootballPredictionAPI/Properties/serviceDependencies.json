@@ -1,8 +1,5 @@
 {
   "dependencies": {
-    "apis1": {
-      "type": "apis"
-    ***REMOVED***,
     "secrets1": {
       "type": "secrets",
       "connectionId": "VaultUri",
@@ -11,6 +8,14 @@
     "cosmosdb1": {
       "type": "cosmosdb",
       "connectionId": "ConnectionStrings"
+    ***REMOVED***,
+    "apis1": {
+      "type": "apis"
+    ***REMOVED***,
+    "secrets2": {
+      "type": "secrets",
+      "connectionId": "VaultUri",
+      "dynamicId": null
     ***REMOVED***,
     "identityapp1": {
       "type": "identityapp",

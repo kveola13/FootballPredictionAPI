@@ -7,6 +7,12 @@
       "commands": [
         "dotnet-msidentity"
       ]
+    ***REMOVED***,
+    "swashbuckle.aspnetcore.cli": {
+      "version": "6.4.0",
+      "commands": [
+        "swagger"
+      ]
     ***REMOVED***
   ***REMOVED***
 ***REMOVED***
