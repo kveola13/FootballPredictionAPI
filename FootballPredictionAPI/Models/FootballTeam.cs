@@ -12,5 +12,9 @@ namespace FootballPredictionAPI.Models
         public int MatchesLost { get; set; }
         public int MatchesDraw { get; set; }
         public string? Description { get; set; }
+        public int GoalsScored { get; set; }
+        public int GoalsLost { get; set; }
+        public int GoalDifference { get; set; }
+        public int MatchesPlayed { get; set; }
     }
 }
