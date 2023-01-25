@@ -20,6 +20,7 @@ public class FootballRepository : IFootballRepository
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
     private readonly string containerName = "teams";
+    private readonly string macthesContainer = "matches";
 
     public FootballRepository(FootballTeamContext context, IMapper mapper, IConfiguration configuration)
     {
@@ -362,4 +363,23 @@ public class FootballRepository : IFootballRepository
         );
         container = client.GetContainer(dbName, containerName);
     ***REMOVED***
+    
+    private void CreateContainerMatches(out CosmosClient client, out Container container)
+    {
+        var keyVaultEndpoint = new Uri(_configuration["Keyvault:VaultUri"]!);
+        var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
+        var accountEndpoint = secretClient.GetSecretAsync("CosmosDBEndpoint").Result.Value.Value;
+        var accountKey = secretClient.GetSecretAsync("CosmosDBKey").Result.Value.Value;
+        var dbName = secretClient.GetSecretAsync("DatabaseName").Result.Value.Value;
+        client = new
+        (
+            accountEndpoint: accountEndpoint,
+            authKeyOrResourceToken: accountKey!
+        );
+        Database db = client.GetDatabase(dbName);
+        var response = db.CreateContainerIfNotExistsAsync(id: macthesContainer, 
+                                                        partitionKeyPath: "/Id", throughput: 400);
+        container = response.Result.Container;
+    ***REMOVED***
+    
 ***REMOVED***
