@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Azure.Cosmos;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +29,12 @@ var CosmosClient = new CosmosClient(client.GetSecretAsync("ConnectionStrings").R
     .CreateDatabaseIfNotExistsAsync(dbName);
 
 CosmosClient.Result.Database.CreateContainerIfNotExistsAsync(new ContainerProperties() { PartitionKeyPath="/id", Id=containerName ***REMOVED***);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"))
+        .EnableTokenAcquisitionToCallDownstreamApi()
+            .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
+            .AddInMemoryTokenCaches();
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<FootballTeamContext>(optionsAction => optionsAction.UseCosmos(accountEndpoint!, accountKey!, dbName!));
@@ -47,6 +55,8 @@ if (app.Environment.IsDevelopment())
 ***REMOVED***
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
