@@ -32,9 +32,11 @@
     <None Remove="AutoMapper.Extensions.Microsoft.DependencyInjection" />
     <None Remove="AutoMapper" />
     <None Remove="Context\" />
+    <None Remove="matches_teams_current_avg.csv" />
+    <None Remove="Data\matches_stats_only.csv" />
+    <None Remove="Data\laliga21-22.csv" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Data" />
     <Folder Include="DTOs\" />
     <Folder Include="Context\" />
   </ItemGroup>
