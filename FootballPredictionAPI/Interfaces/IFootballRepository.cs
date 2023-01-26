@@ -18,5 +18,6 @@ public interface IFootballRepository
     [Obsolete("Not needed after update")]
     bool FootballTeamTableExists();
 
-    Task<object> PopulateTeams();
+    Task PopulateTeams();
+    Task PopulateMatches();
 }
