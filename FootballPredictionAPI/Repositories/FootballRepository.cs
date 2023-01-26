@@ -1,12 +1,13 @@
 using AutoMapper;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using FootballPredictionAPI.Context;
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Interfaces;
 using FootballPredictionAPI.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
+using System.Net;
 
 namespace FootballPredictionAPI.Repositories;
 
@@ -15,68 +16,139 @@ public class FootballRepository : IFootballRepository
 
     private readonly FootballTeamContext _context;
     private readonly IMapper _mapper;
-    
-    public FootballRepository(FootballTeamContext context, IMapper mapper)
+    private readonly IConfiguration _configuration;
+    private readonly string containerName = "teams";
+
+    public FootballRepository(FootballTeamContext context, IMapper mapper, IConfiguration configuration)
     {
         _context = context;
         _mapper = mapper;
+        _configuration = configuration;
     ***REMOVED***
-    public async Task<IEnumerable<FootballTeamDTO>> GetFootballTeams()
+    public async Task<IEnumerable<FootballTeamDTO?>> GetFootballTeams()
     {
-        var list = await _context.Teams.ToListAsync();
-        return _mapper.Map<IEnumerable<FootballTeamDTO>>(list);
+        CreateDatabaseConnection(out _, out Container container);
+        var dbContainerResponse = container.GetItemQueryIterator<FootballTeamDTO>(new QueryDefinition("SELECT * from c"));
+        List<FootballTeamDTO> list = new();
+        while (dbContainerResponse.HasMoreResults)
+        {
+            FeedResponse<FootballTeamDTO> response = await dbContainerResponse.ReadNextAsync();
+            foreach (FootballTeamDTO team in response)
+            {
+                list.Add(team);
+            ***REMOVED***
+        ***REMOVED***
+        return list;
     ***REMOVED***
 
-    public async Task<FootballTeamDTO> GetFootballTeamById(int id)
+    public async Task<FootballTeamDTO?> GetFootballTeamById(string id)
     {
-        Task<bool> exists = Exists<int>(id);
-        Console.WriteLine(exists.Result);
-        var team = await _context.Teams.FirstOrDefaultAsync(ft => ft.Id == id);
-        return _mapper.Map<FootballTeamDTO>(team);
+        CreateDatabaseConnection(out _, out Container container);
+        IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
+        var matches = queryable
+        .Where(fb => fb.Id!.Equals(id));
+        using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
+        while (linqFeed.HasMoreResults)
+        {
+            FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
+            return _mapper.Map<FootballTeamDTO>(response.FirstOrDefault());
+        ***REMOVED***
+        return null;
     ***REMOVED***
 
-    public async Task<FootballTeamDTO> GetFootballTeamByName(string name)
+    public async Task<FootballTeamDTO?> GetFootballTeamByName(string name)
     {
-        var team = await _context.Teams.FirstOrDefaultAsync(ft => ft.Name.ToLower().Equals(name.ToLower()));
-        return _mapper.Map<FootballTeamDTO>(team);
+        CreateDatabaseConnection(out _, out Container container);
+        IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
+        var matches = queryable
+        .Where(fb => fb.Name!.Equals(name));
+        using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
+        while (linqFeed.HasMoreResults)
+        {
+            FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
+            return _mapper.Map<FootballTeamDTO>(response.FirstOrDefault());
+        ***REMOVED***
+        return null;
     ***REMOVED***
 
-    public async Task<bool> UpdateFootballTeam(int id, FootballTeam footballTeam)
+    public async Task<FootballTeam?> UpdateFootballTeam(string id, FootballTeam footballTeam)
     {
-        footballTeam.Points = CalculatePoints(footballTeam);
-        _context.Teams.Update(footballTeam);
-        int result = await _context.SaveChangesAsync();
-        return result > 0;
+        CreateDatabaseConnection(out _, out Container container);
+        IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
+        var matches = queryable
+        .Where(fb => fb.Id!.Equals(id));
+        using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
+        while (linqFeed.HasMoreResults)
+        {
+            FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
+            var team = response.FirstOrDefault();
+            team = new FootballTeam
+            {
+                Id = id,
+                Name = footballTeam.Name,
+                MatchesWon = footballTeam.MatchesWon,
+                MatchesLost = footballTeam.MatchesLost,
+                MatchesDraw = footballTeam.MatchesDraw,
+                Description = footballTeam.Description,
+            ***REMOVED***;
+            await container.UpsertItemAsync(team);
+            return team;
+        ***REMOVED***
+        return null;
     ***REMOVED***
 
-    public async Task<bool> DeleteFootballTeamById(int id)
+    public async Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeam)
     {
-        _context.Teams.Remove(_context.Teams.FirstOrDefault(ft => ft.Id == id));
-        int result = await _context.SaveChangesAsync();
-        return result > 0; 
+        CreateDatabaseConnection(out _, out Container container);
+        var mappedTeam = _mapper.Map<FootballTeam>(footballTeam);
+        mappedTeam.Id = Guid.NewGuid().ToString();
+        mappedTeam.Points = CalculatePoints(mappedTeam);
+        var createTeam = await container.CreateItemAsync(mappedTeam);
+        return createTeam;
     ***REMOVED***
 
-    public async Task<bool> DeleteFootballTeamByName(string name)
+    public async Task<FootballTeam?> DeleteFootballTeamById(string id)
     {
-        _context.Teams.Remove(_context.Teams.FirstOrDefault(ft => ft.Name.ToLower().Equals(name.ToLower())));
-        int result = await _context.SaveChangesAsync();
-        return result > 0; 
+        CreateDatabaseConnection(out _, out Container container);
+        IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
+        var matches = queryable
+        .Where(fb => fb.Id!.Equals(id));
+        using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
+        while (linqFeed.HasMoreResults)
+        {
+            FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
+            var team = response.FirstOrDefault();
+            await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+            return team;
+        ***REMOVED***
+        return null;
     ***REMOVED***
 
-    public async Task<bool> AddFootballTeam(FootballTeam footballTeam)
+    public async Task<FootballTeam?> DeleteFootballTeamByName(string name)
     {
-        await _context.Teams.AddAsync(footballTeam);
-        int result = await _context.SaveChangesAsync();
-        return result > 0;
+        CreateDatabaseConnection(out _, out Container container);
+        IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
+        var matches = queryable
+        .Where(fb => fb.Name!.Equals(name));
+        using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
+        while (linqFeed.HasMoreResults)
+        {
+            FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
+            var team = response.FirstOrDefault();
+            await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+            return team;
+        ***REMOVED***
+        return null;
     ***REMOVED***
-    
+
+    [Obsolete("This will no longer be needed after a CosmosDB integration")]
     public async Task<IEnumerable<FootballTeamDTO>> Seed()
     {
         string path = "Data/laliga21-22.csv";
-       
-        string[] lines = await System.IO.File.ReadAllLinesAsync(path);
+
+        string[] lines = await File.ReadAllLinesAsync(path);
         var teamsData = lines.Skip(1);
-        List<FootballTeam> teams = new List<FootballTeam>();
+        List<FootballTeam> teams = new();
         foreach (string line in teamsData)
         {
             string[] columns = line.Split(",");
@@ -84,7 +156,7 @@ public class FootballRepository : IFootballRepository
             int wins = int.Parse(columns[3]);
             int lost = int.Parse(columns[5]);
             int draw = int.Parse(columns[4]);
-            FootballTeam team = new FootballTeam
+            FootballTeam team = new()
             {
                 Name = ftName,
                 MatchesWon = wins,
@@ -96,30 +168,35 @@ public class FootballRepository : IFootballRepository
             teams.Add(team);
             await _context.Teams.AddAsync(team);
         ***REMOVED***
-        
-        await _context.SaveChangesAsync();
-        
-        return _mapper.Map<IEnumerable<FootballTeamDTO>>(teams);
-        
-    ***REMOVED***
 
-    public async Task<bool> Exists<T>(T id)
-    {
-        return await _context.Teams.AnyAsync(ft => ft.Id.ToString() == id.ToString() || ft.Name.ToLower().Equals(id.ToString().ToLower()));
+        await _context.SaveChangesAsync();
+
+        return _mapper.Map<IEnumerable<FootballTeamDTO>>(teams);
+
     ***REMOVED***
 
     public int CalculatePoints(FootballTeam footballTeam)
     {
         return (footballTeam.MatchesWon * 3) + footballTeam.MatchesDraw;
     ***REMOVED***
-
-    public bool ListEmpty()
-    {
-        return !_context.Teams.Any();
-    ***REMOVED***
-
+    [Obsolete("Not needed after update")]
     public bool FootballTeamTableExists()
     {
         return _context.Teams != null;
+    ***REMOVED***
+
+    private void CreateDatabaseConnection(out CosmosClient client, out Container container)
+    {
+        var keyVaultEndpoint = new Uri(_configuration["Keyvault:VaultUri"]!);
+        var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
+        var accountEndpoint = secretClient.GetSecretAsync("CosmosDBEndpoint").Result.Value.Value;
+        var accountKey = secretClient.GetSecretAsync("CosmosDBKey").Result.Value.Value;
+        var dbName = secretClient.GetSecretAsync("DatabaseName").Result.Value.Value;
+        client = new
+        (
+            accountEndpoint: accountEndpoint,
+            authKeyOrResourceToken: accountKey!
+        );
+        container = client.GetContainer(dbName, containerName);
     ***REMOVED***
 ***REMOVED***

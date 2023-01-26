@@ -1,5 +1,6 @@
 namespace FootballPredictionAPI.DTOs;
 
+[Obsolete("Not needed after update")]
 public class CreateFootballTeamDTO
 {
     public string? Name { get; set; ***REMOVED***
