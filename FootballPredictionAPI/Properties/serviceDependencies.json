@@ -1,8 +1,5 @@
 {
   "dependencies": {
-    "apis1": {
-      "type": "apis"
-    },
     "secrets1": {
       "type": "secrets",
       "connectionId": "VaultUri",
@@ -11,6 +8,19 @@
     "cosmosdb1": {
       "type": "cosmosdb",
       "connectionId": "ConnectionStrings"
+    },
+    "apis1": {
+      "type": "apis"
+    },
+    "secrets2": {
+      "type": "secrets",
+      "connectionId": "VaultUri",
+      "dynamicId": null
+    },
+    "identityapp1": {
+      "type": "identityapp",
+      "connectionId": "AzureAD:ClientSecret",
+      "dynamicId": null
     }
   }
 }
