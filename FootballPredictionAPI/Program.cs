@@ -6,11 +6,8 @@ using FootballPredictionAPI.Interfaces;
 using FootballPredictionAPI.Repositories;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Identity;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Azure.Cosmos;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,7 +38,7 @@ builder.Services.AddDbContext<FootballTeamContext>(optionsAction => optionsActio
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
+IMapper? mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddScoped<IFootballRepository, FootballRepository>();
 builder.Services.AddSingleton(mapper);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
