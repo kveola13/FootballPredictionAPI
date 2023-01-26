@@ -30,24 +30,5 @@ public class FootballMatch
     public int HTPassingAccuracy { get; set; }
     public int ATPassingAccuracy { get; set; }
     public string HTResult { get; set; }
-    /*public int? HTPoints { get; set; }
-    public int? HTGoalsScored { get; set; }
-    public int? HTGoalsAgainst { get; set; }
-    public int? HTGoalDifference { get; set; }
-    public int? HTMatchesWon { get; set; }
-    public int? HTMatchesLost { get; set; }
-    public int? HTMatchesDraw { get; set; }
-    public int? ATPoints { get; set; }
-    public int? ATGoalsScored { get; set; }
-    public int? ATGoalsAgainst { get; set; }
-    
-    public int? ATGoalDifference { get; set; }
-    
-    public int? ATMatchesWon { get; set; }
-    
-    public int? ATMatchesLost { get; set; }
-    
-    public int? ATMatchesDraw { get; set; }*/
-    
-    
+
 }
