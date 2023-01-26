@@ -104,6 +104,8 @@ public class FootballRepository : IFootballRepository
     [Obsolete("Not needed after teams are initialized")]
     public async Task<object> UpdateAllTeams()
     {
+        // Update goalDifference when all teams are added / updated based on matches
+        
         CreateDatabaseConnection(out _, out Container container);
         IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
 
@@ -167,6 +169,8 @@ public class FootballRepository : IFootballRepository
     
     public async Task<FootballTeam?> DeleteMultipleFootballTeamsByName(string name)
     {
+        // Delete all times with given name
+        
         CreateDatabaseConnection(out _, out Container container);
         IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
         var matches = queryable
@@ -221,7 +225,8 @@ public class FootballRepository : IFootballRepository
     [Obsolete("This will no longer be needed after CosmosDB population")]
     public async Task PopulateTeams()
     {
-        // Check if container exists, create if not
+        // TO DO: Check if container exists, create if not
+        
         List<FootballTeam> teams = new List<FootballTeam>();
         IEnumerable<FootballMatch> records;
         using (var reader = new StreamReader("matches_teams_current.csv"))
@@ -307,6 +312,7 @@ public class FootballRepository : IFootballRepository
         var updateTeam = UpdateAllTeams();
     }
     
+    [Obsolete("Not needed after initial population of db")]
     public async Task PopulateMatches()
     {
         // Create container
@@ -320,14 +326,16 @@ public class FootballRepository : IFootballRepository
             records = csv.GetRecords<FootballMatch>().ToList();
         }
 
+        records = records.Skip(1);
+
         Console.WriteLine(records.Count());
-        /*foreach (var record in records)
+        foreach (var record in records)
         {
             
             // Here add to db
             record.Id = Guid.NewGuid().ToString();
             await container.CreateItemAsync(record);
-        }*/
+        }
         
     }
     
@@ -364,7 +372,7 @@ public class FootballRepository : IFootballRepository
         );
         container = client.GetContainer(dbName, containerName);
     }
-    
+
     private void CreateContainerMatches(out CosmosClient client, out Container container)
     {
         var keyVaultEndpoint = new Uri(_configuration["Keyvault:VaultUri"]!);

@@ -117,6 +117,8 @@ namespace FootballPredictionAPI.Controllers
         {
             await _repository.PopulateTeams();
         }
+        
+        [Obsolete("Not needed after initial population of db")]
 
         [HttpPost("populatematches")]
         public async Task PopulateMatches()
