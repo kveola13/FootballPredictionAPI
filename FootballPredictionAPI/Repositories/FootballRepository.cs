@@ -10,6 +10,7 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using System.Net;
 using CsvHelper;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FootballPredictionAPI.Repositories;
 
@@ -218,7 +219,7 @@ public class FootballRepository : IFootballRepository
     ***REMOVED***
     
     [Obsolete("This will no longer be needed after CosmosDB population")]
-    public async Task<object> PopulateTeams()
+    public async Task PopulateTeams()
     {
         // Check if container exists, create if not
         List<FootballTeam> teams = new List<FootballTeam>();
@@ -304,29 +305,29 @@ public class FootballRepository : IFootballRepository
             var postTeam = AddFootballTeam(team);
         ***REMOVED***
         var updateTeam = UpdateAllTeams();
-        
-        return null;
     ***REMOVED***
     
     public async Task PopulateMatches()
     {
         // Create container
-        //CreateDatabaseConnection(out _, out Container matchescontainer);
-        
+        CreateContainerMatches(out _, out Container container);
+
         // Add matches
-        List<FootballMatch> matches = new List<FootballMatch>();
         IEnumerable<FootballMatch> records;
-        using (var reader = new StreamReader("matches_teams_current.csv"))
+        using (var reader = new StreamReader("Data/matches_teams_current.csv"))
         using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
         {
             records = csv.GetRecords<FootballMatch>().ToList();
         ***REMOVED***
 
-        foreach (var record in records)
+        Console.WriteLine(records.Count());
+        /*foreach (var record in records)
         {
+            
             // Here add to db
-            Console.WriteLine(record.HTResult);
-        ***REMOVED***
+            record.Id = Guid.NewGuid().ToString();
+            await container.CreateItemAsync(record);
+        ***REMOVED****/
         
     ***REMOVED***
     
@@ -377,8 +378,9 @@ public class FootballRepository : IFootballRepository
             authKeyOrResourceToken: accountKey!
         );
         Database db = client.GetDatabase(dbName);
-        var response = db.CreateContainerIfNotExistsAsync(id: macthesContainer, 
-                                                        partitionKeyPath: "/Id", throughput: 400);
+        var throughput = ThroughputProperties.CreateAutoscaleThroughput(1000);
+
+        var response = db.CreateContainerIfNotExistsAsync(new ContainerProperties(macthesContainer, "/id"), throughput);
         container = response.Result.Container;
     ***REMOVED***
     

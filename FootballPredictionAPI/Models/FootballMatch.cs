@@ -1,10 +1,13 @@
 
 
+using Newtonsoft.Json;
+
 namespace FootballPredictionAPI.Models;
 
 public class FootballMatch
 {
-    public int Id { get; set; ***REMOVED***
+    [JsonProperty(PropertyName = "id")]
+    public string Id { get; set; ***REMOVED***
     public int Week { get; set; ***REMOVED***
     public DateTime Date { get; set; ***REMOVED***
     public String HomeTeam { get; set; ***REMOVED***
