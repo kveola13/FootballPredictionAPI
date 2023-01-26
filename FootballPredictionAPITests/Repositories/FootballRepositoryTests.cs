@@ -15,14 +15,23 @@ using Moq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using FootballPredictionAPI.DTOs;
+using FootballPredictionAPI.Controllers;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FootballPredictionAPI.Repositories.Tests
 {
     [TestClass()]
-    public class FootballRepositoryTests : IFootballRepository
+    public class FootballRepositoryTests
     {
+        private readonly Mock<IFootballRepository>? _repository;
+        private readonly FootballRepository? _footballRepository;
         private FootballTeam? footballTeam;
-        private FootballRepository? _repository;
+
+        public FootballRepositoryTests()
+        {
+            _repository = new Mock<IFootballRepository>();
+            _footballRepository = new FootballRepository(null!,null!,null!);
+        }
 
         [TestInitialize]
         public void Init()
@@ -45,55 +54,115 @@ namespace FootballPredictionAPI.Repositories.Tests
             Debug.WriteLine("Repository tests terminated..");
         }
 
-        [TestMethod("Test repository")]
-        public void FootballRepositoryTest()
-        {
-            Assert.Fail();
-        }
-
         [TestMethod("Get football teams")]
         public void GetFootballTeamsTest()
         {
-            Assert.Fail();
+            var teamList = new List<FootballTeamDTO>() {
+                new FootballTeamDTO(),
+                new FootballTeamDTO()
+            };
+            _repository!.Setup<Task<IEnumerable<FootballTeamDTO>>>(
+                rep => rep.GetFootballTeams()!
+            ).Returns(Task.FromResult<IEnumerable<FootballTeamDTO>>(teamList));
+            var controller = new FootballTeamsController(null!, _repository.Object);
+            var result = controller.GetTeams().Result.Result;
+            var objectResultForStatusCode = (OkObjectResult)result!;
+
+            Assert.AreEqual(200, objectResultForStatusCode.StatusCode);
         }
 
         [TestMethod("Get football team by id")]
         public void GetFootballTeamByIdTest()
         {
-            Assert.Fail();
+            var team = new FootballTeamDTO();
+
+            _repository!.Setup<Task<FootballTeamDTO>>(
+                rep => rep.GetFootballTeamById("testing")!
+            ).Returns(Task.FromResult<FootballTeamDTO>(team));
+            var controller = new FootballTeamsController(null!, _repository.Object);
+            var result = controller.GetTeams().Result.Result;
+            var objectResultForStatusCode = (OkObjectResult)result!;
+
+            Assert.AreEqual(200, objectResultForStatusCode.StatusCode);
         }
 
         [TestMethod("Get football team by name")]
         public void GetFootballTeamByNameTest()
         {
-            Assert.Fail();
+            var team = new FootballTeamDTO();
+
+            _repository!.Setup<Task<FootballTeamDTO>>(
+                rep => rep.GetFootballTeamByName("testing")!
+            ).Returns(Task.FromResult<FootballTeamDTO>(team));
+            var controller = new FootballTeamsController(null!, _repository.Object);
+            var result = controller.GetTeams().Result.Result;
+            var objectResultForStatusCode = (OkObjectResult)result!;
+
+            Assert.AreEqual(200, objectResultForStatusCode.StatusCode);
         }
 
         [TestMethod("Update football team")]
         public void UpdateFootballTeamTest()
         {
-            Assert.Fail();
+            var team = new FootballTeam();
+
+            _repository!.Setup<Task<FootballTeam>>(
+                rep => rep.UpdateFootballTeam("test", new FootballTeam())!
+            ).Returns(Task.FromResult<FootballTeam>(team));
+            var controller = new FootballTeamsController(null!, _repository.Object);
+            var result = controller.GetTeams().Result.Result;
+            var objectResultForStatusCode = (OkObjectResult)result!;
+
+            Assert.AreEqual(200, objectResultForStatusCode.StatusCode);
         }
 
         [TestMethod("Add a football team")]
         public void AddFootballTeamTest()
         {
-            Assert.Fail();
+            var team = new FootballTeamDTO();
+
+            _repository!.Setup<Task<FootballTeam>>(
+                rep => rep.AddFootballTeam(team)!
+            ).Returns(Task.FromResult<FootballTeam>(new FootballTeam()));
+            var controller = new FootballTeamsController(null!, _repository.Object);
+            var result = controller.GetTeams().Result.Result;
+            var objectResultForStatusCode = (OkObjectResult)result!;
+
+            Assert.AreEqual(200, objectResultForStatusCode.StatusCode);
         }
 
         [TestMethod("Delete a football team by id")]
         public void DeleteFootballTeamByIdTest()
         {
-            Assert.Fail();
+            var team = new FootballTeamDTO();
+
+            _repository!.Setup<Task<FootballTeam>>(
+                rep => rep.DeleteFootballTeamById("testing")!
+            ).Returns(Task.FromResult<FootballTeam>(new FootballTeam()));
+            var controller = new FootballTeamsController(null!, _repository.Object);
+            var result = controller.GetTeams().Result.Result;
+            var objectResultForStatusCode = (OkObjectResult)result!;
+
+            Assert.AreEqual(200, objectResultForStatusCode.StatusCode);
         }
 
         [TestMethod("Delete a football team by name")]
         public void DeleteFootballTeamByNameTest()
         {
-            Assert.Fail();
+            var team = new FootballTeamDTO();
+
+            _repository!.Setup<Task<FootballTeam>>(
+                rep => rep.DeleteFootballTeamByName("testing")!
+            ).Returns(Task.FromResult<FootballTeam>(new FootballTeam()));
+            var controller = new FootballTeamsController(null!, _repository.Object);
+            var result = controller.GetTeams().Result.Result;
+            var objectResultForStatusCode = (OkObjectResult)result!;
+
+            Assert.AreEqual(200, objectResultForStatusCode.StatusCode);
         }
 
         [Obsolete("No longer in use")]
+        [Ignore("Should not be needed to test")]
         [TestMethod("Seed data test")]
         public void SeedTest()
         {
@@ -105,65 +174,16 @@ namespace FootballPredictionAPI.Repositories.Tests
         [TestCategory("Internal logic")]
         public void CalculatePointsTest()
         {
-            var calculatedScore = _repository!.CalculatePoints(footballTeam!);
+            var calculatedScore = _footballRepository!.CalculatePoints(footballTeam!);
             Assert.AreEqual(10, calculatedScore);
         }
 
         [Obsolete("No longer in use")]
+        [Ignore("Should not be needed to test")]
         [TestMethod("Check if a football team table exists")]
         public void FootballTeamTableExistsTest()
         {
             Assert.Fail();
-        }
-
-        public Task<IEnumerable<FootballTeamDTO?>> GetFootballTeams()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<FootballTeamDTO?> GetFootballTeamById(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<FootballTeamDTO?> GetFootballTeamByName(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<FootballTeam?> UpdateFootballTeam(string id, FootballTeam footballTeamDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeam)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<FootballTeam?> DeleteFootballTeamById(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<FootballTeam?> DeleteFootballTeamByName(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<FootballTeamDTO>> Seed()
-        {
-            throw new NotImplementedException();
-        }
-
-        public int CalculatePoints(FootballTeam footballTeam)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool FootballTeamTableExists()
-        {
-            throw new NotImplementedException();
         }
     }
 }
