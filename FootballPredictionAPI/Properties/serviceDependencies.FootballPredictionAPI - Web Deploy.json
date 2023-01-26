@@ -4,18 +4,12 @@
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ApiManagement/service/FootballPredictionAPImanagement/apis/FootballPredictionAPI",
       "type": "apis.azure"
     ***REMOVED***,
-    "secrets1": {
+    "secrets2": {
       "secretStore": "AzureAppSettings",
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.KeyVault/vaults/footballprediction-kv",
       "type": "secrets.keyVault",
       "connectionId": "VaultUri",
       "dynamicId": null
-    ***REMOVED***,
-    "cosmosdb1": {
-      "secretStore": "AzureKeyVault",
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.DocumentDB/databaseAccounts/iteraaccountname",
-      "type": "cosmosdb.azure",
-      "connectionId": "ConnectionStrings"
     ***REMOVED***,
     "identityapp1": {
       "secretStore": "AzureAppSettings",
