@@ -23,9 +23,17 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 7.0.x
-  test-application:
+        
+  trust-certificates:
     runs-on: windows-latest
     needs: [checkout-job, install-job]
+    steps:
+    - name: Trust Certificate
+      run: dotnet dev-certs https --trust
+      
+  test-application:
+    runs-on: windows-latest
+    needs: [trust-certificates]
     steps:
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
