@@ -2,13 +2,13 @@ name: .NET Core Desktop
 
 on:
   push:
-    branches: [ "main", "**" ]
+    branches: "**"
   pull_request:
-    branches: [ "main", "**" ]
+    branches: [ "main" ]
 
 jobs:
-  
   checkout-and-test:
+    name: Checkout, then test
     runs-on: windows-latest  # For a list of available runner types, refer to
                              # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     env:
@@ -39,7 +39,6 @@ jobs:
       run: dotnet test
 
   build:
-  
     strategy:
       matrix:
         configuration: [Debug, Release]
@@ -47,6 +46,7 @@ jobs:
     runs-on: windows-latest
     env:
       Solution_Name: FootballPredictionAPI.sln
+    needs: checkout-and-test
     
     steps:
 
