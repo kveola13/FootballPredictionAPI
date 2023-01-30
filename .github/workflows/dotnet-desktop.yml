@@ -30,15 +30,15 @@ jobs:
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
-    - name: List repo for debug
-      run: dir .
     
     - name: Install dependencies
       run: dotnet restore
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
+      
     - name: Test
       run: dotnet test
+      
+    #- name: Build
+    # run: dotnet build --configuration Release --no-restore
 
   build:
   
