@@ -23,13 +23,13 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.DOTNET_CORE_VERSION ***REMOVED******REMOVED***
     - name: Setup SwashBuckle .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION ***REMOVED******REMOVED***
     - name: Restore
@@ -55,7 +55,7 @@ jobs:
     needs: build
     steps:
     - name: Download artifact from build job
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: webapp
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED***
