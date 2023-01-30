@@ -17,4 +17,7 @@ public interface IFootballRepository
     int CalculatePoints(FootballTeam footballTeam);
     [Obsolete("Not needed after update")]
     bool FootballTeamTableExists();
+
+    Task PopulateTeams();
+    Task PopulateMatches();
 }
