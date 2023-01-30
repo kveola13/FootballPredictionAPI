@@ -16,7 +16,6 @@ namespace FootballPredictionAPI.Repositories;
 
 public class FootballRepository : IFootballRepository
 {
-
     private readonly FootballTeamContext _context;
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;

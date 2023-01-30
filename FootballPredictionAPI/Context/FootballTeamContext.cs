@@ -1,5 +1,4 @@
 ﻿using FootballPredictionAPI.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace FootballPredictionAPI.Context
