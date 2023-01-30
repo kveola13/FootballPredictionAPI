@@ -43,11 +43,12 @@ jobs:
     strategy:
       matrix:
         configuration: [Debug, Release]
-
+    
     runs-on: windows-latest
     env:
       Solution_Name: FootballPredictionAPI.sln
-
+    needs: checkout-and-test
+    
     steps:
 
     # Restore the application to populate the obj folder with RuntimeIdentifiers
