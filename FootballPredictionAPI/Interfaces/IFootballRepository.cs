@@ -8,8 +8,8 @@ public interface IFootballRepository
     Task<IEnumerable<FootballTeamDTO?>> GetFootballTeams();
     Task<FootballTeamDTO?> GetFootballTeamById(string id);
     Task<FootballTeamDTO?> GetFootballTeamByName(string name);
-    Task<FootballTeam?> UpdateFootballTeam(string id, FootballTeam footballTeamDto);
-    Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeam);
+    Task<FootballTeam?> UpdateFootballTeam(string id, FootballTeam footballTeam);
+    Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeamDTO);
     Task<FootballTeam?> DeleteFootballTeamById(string id);
     Task<FootballTeam?> DeleteFootballTeamByName(string name);
     [Obsolete("This will no longer be needed after a CosmosDB integration")]
