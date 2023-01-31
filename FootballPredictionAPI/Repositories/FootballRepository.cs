@@ -1,3 +1,4 @@
+using System.Globalization;
 using AutoMapper;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -8,6 +9,8 @@ using FootballPredictionAPI.Models;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using System.Net;
+using CsvHelper;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FootballPredictionAPI.Repositories;
 
@@ -17,6 +20,7 @@ public class FootballRepository : IFootballRepository
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
     private readonly string containerName = "teams";
+    private readonly string macthesContainer = "matches";
 
     public FootballRepository(FootballTeamContext context, IMapper mapper, IConfiguration configuration)
     {
@@ -95,6 +99,28 @@ public class FootballRepository : IFootballRepository
         ***REMOVED***
         return null;
     ***REMOVED***
+    
+    [Obsolete("Not needed after teams are initialized")]
+    public async Task<object> UpdateAllTeams()
+    {
+        // Update goalDifference when all teams are added / updated based on matches
+        
+        CreateDatabaseConnection(out _, out Container container);
+        IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
+
+        using FeedIterator<FootballTeam> linqFeed = queryable.ToFeedIterator();
+        while (linqFeed.HasMoreResults)
+        {
+            FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
+            foreach (var team in response)
+            {
+                team.GoalDifference = team.GoalsScored - team.GoalsLost;
+                await container.UpsertItemAsync(team);
+            ***REMOVED***
+          
+        ***REMOVED***
+        return null;
+    ***REMOVED***
 
     public async Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeam)
     {
@@ -139,6 +165,27 @@ public class FootballRepository : IFootballRepository
         ***REMOVED***
         return null;
     ***REMOVED***
+    
+    public async Task<FootballTeam?> DeleteMultipleFootballTeamsByName(string name)
+    {
+        // Delete all times with given name
+        
+        CreateDatabaseConnection(out _, out Container container);
+        IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
+        var matches = queryable
+            .Where(fb => fb.Name!.Equals(name));
+        
+        FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
+        while (linqFeed.HasMoreResults)
+        {
+            FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
+            foreach (var team in response.Take(10))
+            {
+                await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+            ***REMOVED***
+        ***REMOVED***
+        return null;
+    ***REMOVED***
 
     [Obsolete("This will no longer be needed after a CosmosDB integration")]
     public async Task<IEnumerable<FootballTeamDTO>> Seed()
@@ -173,6 +220,132 @@ public class FootballRepository : IFootballRepository
         return _mapper.Map<IEnumerable<FootballTeamDTO>>(teams);
 
     ***REMOVED***
+    
+    [Obsolete("This will no longer be needed after CosmosDB population")]
+    public async Task PopulateTeams()
+    {
+        // TO DO: Check if container exists, create if not
+        
+        List<FootballTeam> teams = new List<FootballTeam>();
+        IEnumerable<FootballMatch> records;
+        using (var reader = new StreamReader("matches_teams_current.csv"))
+        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+        {
+            records = csv.GetRecords<FootballMatch>().ToList();
+        ***REMOVED***
+
+        foreach (var record in records)
+        {
+            Console.WriteLine(record.Score);
+            string HT = record.HomeTeam;
+            string AT = record.AwayTeam;
+            Console.WriteLine(HT + ", " + AT);
+            FootballTeam ft = teams.FirstOrDefault(t => t.Name == HT);
+            if (ft == null)
+            {
+                FootballTeam ftN = new FootballTeam
+                {
+                    Name = HT,
+                    Points = 0,
+                    MatchesWon = record.HTResult == "W" ? 1 : 0,
+                    MatchesLost = record.HTResult == "L" ? 1 : 0,
+                    MatchesDraw = record.HTResult == "D" ? 1 : 0,
+                    Description = "",
+                    GoalsScored = int.Parse(record.Score.Split(":")[0]),
+                    GoalsLost = int.Parse(record.Score.Split(":")[1]),
+                    GoalDifference = 0,
+                    MatchesPlayed = 1
+                ***REMOVED***;
+                ftN.Points = CalculatePoints(ftN);
+                ftN.GoalDifference = ftN.GoalsScored - ftN.GoalsLost;
+                teams.Add(ftN);
+            ***REMOVED***
+            else
+            {
+                ft.GoalsScored += int.Parse(record.Score.Split(":")[0]);
+                ft.GoalsLost += int.Parse(record.Score.Split(":")[1]);
+                ft.MatchesWon += record.HTResult == "W" ? 1 : 0;
+                ft.MatchesLost += record.HTResult == "L" ? 1 : 0;
+                ft.MatchesDraw += record.HTResult == "D" ? 1 : 0;
+                ft.Points = CalculatePoints(ft);
+            ***REMOVED***
+
+            
+            FootballTeam aft = teams.FirstOrDefault(t => t.Name == AT);
+            if (aft == null)
+            {
+                FootballTeam ftN = new FootballTeam
+                {
+                    Name = AT,
+                    Points = 0,
+                    MatchesWon = record.HTResult == "L" ? 1 : 0,
+                    MatchesLost = record.HTResult == "L" ? 1 : 0,
+                    MatchesDraw = record.HTResult == "W" ? 1 : 0,
+                    Description = "",
+                    GoalsScored = int.Parse(record.Score.Split(":")[1]),
+                    GoalsLost = int.Parse(record.Score.Split(":")[0]),
+                    GoalDifference = 0,
+                    MatchesPlayed = 1
+                ***REMOVED***;
+                ftN.Points = CalculatePoints(ftN);
+                ftN.GoalDifference = ftN.GoalsScored - ftN.GoalsLost;
+                teams.Add(ftN);
+                Console.WriteLine("Away team " + ftN.Points);
+            ***REMOVED***
+            else
+            {
+                Console.WriteLine("AT before " + aft.Points);
+                aft.GoalsScored += int.Parse(record.Score.Split(":")[1]);
+                aft.GoalsLost += int.Parse(record.Score.Split(":")[0]);
+                aft.MatchesWon += record.HTResult == "L" ? 1 : 0;
+                aft.MatchesLost += record.HTResult == "W" ? 1 : 0;
+                aft.MatchesDraw += record.HTResult == "D" ? 1 : 0;
+                aft.Points = CalculatePoints(aft);
+                Console.WriteLine("AT after " + aft.Points);
+            ***REMOVED***
+        ***REMOVED***
+        foreach (var team in teams)
+        {
+            var postTeam = AddFootballTeam(team);
+        ***REMOVED***
+        var updateTeam = UpdateAllTeams();
+    ***REMOVED***
+    
+    [Obsolete("Not needed after initial population of db")]
+    public async Task PopulateMatches()
+    {
+        // Create container
+        CreateContainerMatches(out _, out Container container);
+
+        // Add matches
+        IEnumerable<FootballMatch> records;
+        using (var reader = new StreamReader("Data/matches_teams_current.csv"))
+        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+        {
+            records = csv.GetRecords<FootballMatch>().ToList();
+        ***REMOVED***
+
+        records = records.Skip(1);
+
+        Console.WriteLine(records.Count());
+        foreach (var record in records)
+        {
+            
+            // Here add to db
+            record.Id = Guid.NewGuid().ToString();
+            await container.CreateItemAsync(record);
+        ***REMOVED***
+        
+    ***REMOVED***
+    
+    public async Task<FootballTeam?> AddFootballTeam(FootballTeam footballTeam)
+    {
+        CreateDatabaseConnection(out _, out Container container);
+        //var mappedTeam = _mapper.Map<FootballTeam>(footballTeam);
+        footballTeam.Id = Guid.NewGuid().ToString();
+        var createTeam = await container.CreateItemAsync(footballTeam);
+        return createTeam;
+    ***REMOVED***
 
     public int CalculatePoints(FootballTeam footballTeam)
     {
@@ -198,4 +371,24 @@ public class FootballRepository : IFootballRepository
         );
         container = client.GetContainer(dbName, containerName);
     ***REMOVED***
+
+    private void CreateContainerMatches(out CosmosClient client, out Container container)
+    {
+        var keyVaultEndpoint = new Uri(_configuration["Keyvault:VaultUri"]!);
+        var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
+        var accountEndpoint = secretClient.GetSecretAsync("CosmosDBEndpoint").Result.Value.Value;
+        var accountKey = secretClient.GetSecretAsync("CosmosDBKey").Result.Value.Value;
+        var dbName = secretClient.GetSecretAsync("DatabaseName").Result.Value.Value;
+        client = new
+        (
+            accountEndpoint: accountEndpoint,
+            authKeyOrResourceToken: accountKey!
+        );
+        Database db = client.GetDatabase(dbName);
+        var throughput = ThroughputProperties.CreateAutoscaleThroughput(1000);
+
+        var response = db.CreateContainerIfNotExistsAsync(new ContainerProperties(macthesContainer, "/id"), throughput);
+        container = response.Result.Container;
+    ***REMOVED***
+    
 ***REMOVED***
