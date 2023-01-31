@@ -43,8 +43,8 @@ jobs:
     - name: Install Swashbuckle CLI .NET Global Tool
       run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION ***REMOVED******REMOVED***
       working-directory: ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED***
-    - name: Generate Open API Specification Document
-      run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH ***REMOVED******REMOVED***" "${{ env.API_IMPORT_DLL ***REMOVED******REMOVED***" "${{ env.API_IMPORT_VERSION ***REMOVED******REMOVED***"
+    #- name: Generate Open API Specification Document
+    #  run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH ***REMOVED******REMOVED***" "${{ env.API_IMPORT_DLL ***REMOVED******REMOVED***" "${{ env.API_IMPORT_VERSION ***REMOVED******REMOVED***"
     - name: Publish Artifacts
       uses: actions/upload-artifact@v1.0.0
       with:
@@ -69,8 +69,8 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.FootballPredictionAMS_SPN ***REMOVED******REMOVED***
-    - name: Import API into Azure API Management
-      run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH ***REMOVED******REMOVED***" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP ***REMOVED******REMOVED***" --service-name "${{ env.AZURE_APIM_SERVICENAME ***REMOVED******REMOVED***" --api-id "${{ env.AZURE_APIM_API_ID ***REMOVED******REMOVED***" --service-url "${{ env.AZURE_APIM_APPSERVICEURL ***REMOVED******REMOVED***" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH ***REMOVED******REMOVED***" --specification-format OpenApi --subscription-required false
+    #- name: Import API into Azure API Management
+    #  run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH ***REMOVED******REMOVED***" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP ***REMOVED******REMOVED***" --service-name "${{ env.AZURE_APIM_SERVICENAME ***REMOVED******REMOVED***" --api-id "${{ env.AZURE_APIM_API_ID ***REMOVED******REMOVED***" --service-url "${{ env.AZURE_APIM_APPSERVICEURL ***REMOVED******REMOVED***" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH ***REMOVED******REMOVED***" --specification-format OpenApi --subscription-required false
     - name: logout
       run: >
         az logout
