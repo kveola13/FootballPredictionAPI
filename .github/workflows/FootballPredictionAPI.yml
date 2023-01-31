@@ -2,7 +2,7 @@ name: Build and deploy .NET Core application to Web App FootballPredictionAPI wi
 on:
   push:
     branches:
-    - main
+    - "**"
 env:
   AZURE_WEBAPP_NAME: FootballPredictionAPI
   AZURE_WEBAPP_PACKAGE_PATH: FootballPredictionAPI\publish
