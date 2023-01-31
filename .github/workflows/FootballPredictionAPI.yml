@@ -65,7 +65,7 @@ jobs:
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME ***REMOVED******REMOVED***
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED***
-        publish-profile: ${{ secrets.FootballPredictionAPI_2EA4 ***REMOVED******REMOVED***
+        #publish-profile: ${{ secrets.FootballPredictionAPI_2EA4 ***REMOVED******REMOVED***
     - name: Azure Login
       uses: azure/login@v1
       with:
