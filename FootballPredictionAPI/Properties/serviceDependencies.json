@@ -9,9 +9,6 @@
       "type": "cosmosdb",
       "connectionId": "ConnectionStrings"
     ***REMOVED***,
-    "apis1": {
-      "type": "apis"
-    ***REMOVED***,
     "secrets2": {
       "type": "secrets",
       "connectionId": "VaultUri",
@@ -21,6 +18,9 @@
       "type": "identityapp",
       "connectionId": "AzureAD:ClientSecret",
       "dynamicId": null
+    ***REMOVED***,
+    "apis1": {
+      "type": "apis"
     ***REMOVED***
   ***REMOVED***
 ***REMOVED***

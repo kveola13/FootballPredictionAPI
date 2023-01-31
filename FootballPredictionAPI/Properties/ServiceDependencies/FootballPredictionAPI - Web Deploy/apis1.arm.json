@@ -49,7 +49,7 @@
           "contentVersion": "1.0.0.0",
           "resources": [
             {
-              "name": "FootballPredictionAPImanagement",
+              "name": "FootballPredictionAPI",
               "type": "Microsoft.ApiManagement/service",
               "location": "[parameters('resourceLocation')]",
               "properties": {
@@ -59,7 +59,7 @@
                 "hostnameConfigurations": [
                   {
                     "type": "Proxy",
-                    "hostName": "footballpredictionapimanagement.azure-api.net",
+                    "hostName": "footballpredictionapi.azure-api.net",
                     "encodedCertificate": null,
                     "keyVaultId": null,
                     "certificatePassword": null,
@@ -95,7 +95,7 @@
             ***REMOVED***,
             {
               "type": "Microsoft.ApiManagement/service/apis",
-              "name": "FootballPredictionAPImanagement/FootballPredictionAPI",
+              "name": "FootballPredictionAPI/FootballPredictionAPI",
               "properties": {
                 "displayName": "FootballPredictionAPI",
                 "apiRevision": "1",
@@ -118,7 +118,7 @@
               ***REMOVED***,
               "apiVersion": "2019-12-01",
               "dependsOn": [
-                "FootballPredictionAPImanagement"
+                "FootballPredictionAPI"
               ]
             ***REMOVED***
           ]
