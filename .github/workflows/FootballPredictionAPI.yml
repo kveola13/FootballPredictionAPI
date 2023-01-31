@@ -60,16 +60,18 @@ jobs:
       with:
         name: webapp
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED***
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.FootballPredictionAPImanagement_SPN ***REMOVED******REMOVED***
+        
     - name: Deploy to Azure WebApp
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME ***REMOVED******REMOVED***
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED***
         #publish-profile: ${{ secrets.FootballPredictionAPI_2EA4 ***REMOVED******REMOVED***
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.FootballPredictionAPImanagement_SPN ***REMOVED******REMOVED***
     ## Does not work currently
     #- name: Import API into Azure API Management
     #  run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH ***REMOVED******REMOVED***" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP ***REMOVED******REMOVED***" --service-name "${{ env.AZURE_APIM_SERVICENAME ***REMOVED******REMOVED***" --api-id "${{ env.AZURE_APIM_API_ID ***REMOVED******REMOVED***" --service-url "${{ env.AZURE_APIM_APPSERVICEURL ***REMOVED******REMOVED***" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH ***REMOVED******REMOVED***" --specification-format OpenApi --subscription-required false
