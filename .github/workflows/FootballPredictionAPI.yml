@@ -13,7 +13,7 @@ env:
   AZURE_APIM_SERVICENAME: FootballPredictionAMS
   AZURE_APIM_API_ID: FootballPredictionAPI
   AZURE_APIM_APPSERVICEURL: https://footballpredictionapi.azurewebsites.net
-  SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
+  SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.4.0
   SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
   API_IMPORT_SPECIFICATION_PATH: FootballPredictionAPI\publish\swagger.json
   API_IMPORT_DLL: FootballPredictionAPI\bin\Release\net7.0\FootballPredictionAPI.dll
@@ -42,11 +42,11 @@ jobs:
       run: dotnet test ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED*** --no-build
     - name: Publish
       run: dotnet publish ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED*** --configuration ${{ env.CONFIGURATION ***REMOVED******REMOVED*** --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED***
-    #- name: Install Swashbuckle CLI .NET Global Tool
-    #  run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION ***REMOVED******REMOVED***
-    #  working-directory: ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED***
-    #- name: Generate Open API Specification Document
-    #  run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH ***REMOVED******REMOVED***" "${{ env.API_IMPORT_DLL ***REMOVED******REMOVED***" "${{ env.API_IMPORT_VERSION ***REMOVED******REMOVED***"
+    - name: Install Swashbuckle CLI .NET Global Tool
+      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION ***REMOVED******REMOVED***
+      working-directory: ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED***
+    - name: Generate Open API Specification Document
+      run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH ***REMOVED******REMOVED***" "${{ env.API_IMPORT_DLL ***REMOVED******REMOVED***" "${{ env.API_IMPORT_VERSION ***REMOVED******REMOVED***"
     - name: Publish Artifacts
       uses: actions/upload-artifact@v1.0.0
       with:
