@@ -359,7 +359,7 @@ public class FootballRepository : IFootballRepository
 
     private void CreateDatabaseConnection(out CosmosClient client, out Container container)
     {
-        var keyVaultEndpoint = new Uri(_configuration["Keyvault:VaultUri"]!);
+        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUri")!);
         var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
         var accountEndpoint = secretClient.GetSecretAsync("CosmosDBEndpoint").Result.Value.Value;
         var accountKey = secretClient.GetSecretAsync("CosmosDBKey").Result.Value.Value;
@@ -374,7 +374,7 @@ public class FootballRepository : IFootballRepository
 
     private void CreateContainerMatches(out CosmosClient client, out Container container)
     {
-        var keyVaultEndpoint = new Uri(_configuration["Keyvault:VaultUri"]!);
+        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUri")!);
         var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
         var accountEndpoint = secretClient.GetSecretAsync("CosmosDBEndpoint").Result.Value.Value;
         var accountKey = secretClient.GetSecretAsync("CosmosDBKey").Result.Value.Value;
