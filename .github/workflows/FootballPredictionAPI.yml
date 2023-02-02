@@ -1,17 +1,19 @@
-name: Build and deploy .NET Core application to Web App FootballPredictionAPI with API Management Service FootballPredictionAPImanagement-FootballPredictionAPI
+name: Build and deploy .NET Core application to Web App FootballPredictionAPI with API Management Service FootballPredictionAMS-FootballPredictionAPI
 on:
   push:
+  pull_request:
     branches:
     - main
+
 env:
   AZURE_WEBAPP_NAME: FootballPredictionAPI
   AZURE_WEBAPP_PACKAGE_PATH: FootballPredictionAPI\publish
   AZURE_APIM_RESOURCE_PATH: /
   AZURE_APIM_RESOURCEGROUP: FootballPredictionAPI-rg
-  AZURE_APIM_SERVICENAME: FootballPredictionAPImanagement
+  AZURE_APIM_SERVICENAME: FootballPredictionAMS
   AZURE_APIM_API_ID: FootballPredictionAPI
   AZURE_APIM_APPSERVICEURL: https://footballpredictionapi.azurewebsites.net
-  SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
+  SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.4.0
   SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
   API_IMPORT_SPECIFICATION_PATH: FootballPredictionAPI\publish\swagger.json
   API_IMPORT_DLL: FootballPredictionAPI\bin\Release\net7.0\FootballPredictionAPI.dll
@@ -43,9 +45,8 @@ jobs:
     - name: Install Swashbuckle CLI .NET Global Tool
       run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
       working-directory: ${{ env.WORKING_DIRECTORY }}
-    ## Does not work currently
-    #- name: Generate Open API Specification Document
-    #  run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}" "${{ env.API_IMPORT_DLL }}" "${{ env.API_IMPORT_VERSION }}"
+    - name: Generate Open API Specification Document
+      run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}" "${{ env.API_IMPORT_DLL }}" "${{ env.API_IMPORT_VERSION }}"
     - name: Publish Artifacts
       uses: actions/upload-artifact@v1.0.0
       with:
@@ -56,7 +57,7 @@ jobs:
     needs: build
     steps:
     - name: Download artifact from build job
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v2
       with:
         name: webapp
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
@@ -65,12 +66,11 @@ jobs:
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        publish-profile: ${{ secrets.FootballPredictionAPI_2EA4 }}
+        publish-profile: ${{ secrets.FootballPredictionAPI_91BE }}
     - name: Azure Login
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.FootballPredictionAPImanagement_SPN }}
-    ## Does not work currently
+        creds: ${{ secrets.FootballPredictionAMS_SPN }}
     #- name: Import API into Azure API Management
     #  run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" --service-name "${{ env.AZURE_APIM_SERVICENAME }}" --api-id "${{ env.AZURE_APIM_API_ID }}" --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}" --specification-format OpenApi --subscription-required false
     - name: logout
