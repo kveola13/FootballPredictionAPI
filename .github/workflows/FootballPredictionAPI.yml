@@ -1,8 +1,10 @@
 name: Build and deploy .NET Core application to Web App FootballPredictionAPI with API Management Service FootballPredictionAMS-FootballPredictionAPI
 on:
   push:
+  pull_request:
     branches:
-    - 38-add-pipelines
+    - main
+
 env:
   AZURE_WEBAPP_NAME: FootballPredictionAPI
   AZURE_WEBAPP_PACKAGE_PATH: FootballPredictionAPI\publish
