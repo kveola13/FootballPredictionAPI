@@ -12,7 +12,7 @@ using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 var keyvaultUri = builder.Configuration.GetConnectionString("VaultUri")!;
-var keyVaultEndpoint = new Uri(keyvaultUri);
+var keyVaultEndpoint = new Uri(keyvaultUri)!;
 var client = new SecretClient(keyVaultEndpoint!, new DefaultAzureCredential());
 var accountEndpoint = client.GetSecretAsync("CosmosDBEndpoint").Result.Value.Value;
 var accountKey = client.GetSecretAsync("CosmosDBKey").Result.Value.Value;
