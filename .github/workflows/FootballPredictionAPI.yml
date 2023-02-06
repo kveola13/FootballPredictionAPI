@@ -40,7 +40,7 @@ jobs:
     - name: Build
       run: dotnet build ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED*** --configuration ${{ env.CONFIGURATION ***REMOVED******REMOVED*** --no-restore
     - name: Test
-      run: dotnet test ../${{ env.TEST_DIRECTORY ***REMOVED******REMOVED*** --no-build
+      run: dotnet test ..\${{ env.TEST_DIRECTORY ***REMOVED******REMOVED*** --no-build
     - name: Publish
       run: dotnet publish ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED*** --configuration ${{ env.CONFIGURATION ***REMOVED******REMOVED*** --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED***
     - name: Install Swashbuckle CLI .NET Global Tool
