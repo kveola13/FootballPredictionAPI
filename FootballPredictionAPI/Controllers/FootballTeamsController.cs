@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Net.Http.Headers;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using FootballPredictionAPI.Models;
 using FootballPredictionAPI.DTOs;
@@ -17,6 +18,84 @@ namespace FootballPredictionAPI.Controllers
         {
             _mapper = mapper;
             _repository = repository;
+        }
+
+        [HttpGet("predict/{team1}/{team2}")]
+        public async Task<ActionResult<string>> PredictResult(string team1, string team2)
+        {
+            // Get teams and check if exist
+            var HomeTeam = _repository.GetFootballTeamByName(team1);
+            var AwayTeam = _repository.GetFootballTeamByName(team2);
+            if (HomeTeam == null || AwayTeam == null)
+            {
+                return NotFound("Team(s) not found!");
+            }
+
+            var handler = new HttpClientHandler()
+            {
+                ClientCertificateOptions = ClientCertificateOption.Manual,
+                ServerCertificateCustomValidationCallback =
+                        (httpRequestMessage, cert, cetChain, policyErrors) => { return true; }
+            };
+            using (var client = new HttpClient(handler))
+            {
+                // Request data goes here
+                // The example below assumes JSON formatting which may be updated
+                // depending on the format your endpoint expects.
+                // More information can be found here:
+                // https://docs.microsoft.com/azure/machine-learning/how-to-deploy-advanced-entry-script
+                var requestBody = @"{
+                  ""Inputs"": {
+                    ""input1"": [
+                      {
+                        ""HomeTeam"": ""Osasuna"",
+                        ""AwayTeam"": ""Sevilla""
+                        }
+                    ]
+                  },
+                  ""GlobalParameters"": {}
+                }";
+                
+                // Replace this with the primary/secondary key or AMLToken for the endpoint
+                const string apiKey = "";
+                if (string.IsNullOrEmpty(apiKey))  
+                {
+                    throw new Exception("A key should be provided to invoke the endpoint");
+                }
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( "Bearer", apiKey);
+                client.BaseAddress = new Uri("http://16f78484-a06a-4bb6-a64a-6f18e517996c.norwayeast.azurecontainer.io/score");
+
+                var content = new StringContent(requestBody);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                // WARNING: The 'await' statement below can result in a deadlock
+                // if you are calling this code from the UI thread of an ASP.Net application.
+                // One way to address this would be to call ConfigureAwait(false)
+                // so that the execution does not attempt to resume on the original context.
+                // For instance, replace code such as:
+                //      result = await DoSomeTask()
+                // with the following:
+                //      result = await DoSomeTask().ConfigureAwait(false)
+                HttpResponseMessage response = await client.PostAsync("", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string result = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("Result: {0}", result);
+                }
+                else
+                {
+                    Console.WriteLine(string.Format("The request failed with status code: {0}", response.StatusCode));
+
+                    // Print the headers - they include the requert ID and the timestamp,
+                    // which are useful for debugging the failure
+                    Console.WriteLine(response.Headers.ToString());
+
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(responseContent);
+                }
+            }
+            return "";
         }
 
         [Obsolete("This will no longer be needed after a CosmosDB integration")]
