@@ -120,7 +120,7 @@ public class FootballRepository : IFootballRepository
             ***REMOVED***
           
         ***REMOVED***
-        return null;
+        return null!;
     ***REMOVED***
 
     public async Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeam)
@@ -223,7 +223,7 @@ public class FootballRepository : IFootballRepository
     ***REMOVED***
     
     [Obsolete("This will no longer be needed after CosmosDB population")]
-    public async Task PopulateTeams()
+    public void PopulateTeams()
     {
         // TO DO: Check if container exists, create if not
         
@@ -238,10 +238,10 @@ public class FootballRepository : IFootballRepository
         foreach (var record in records)
         {
             Console.WriteLine(record.Score);
-            string HT = record.HomeTeam;
-            string AT = record.AwayTeam;
+            string HT = record.HomeTeam!;
+            string AT = record.AwayTeam!;
             Console.WriteLine(HT + ", " + AT);
-            FootballTeam ft = teams.FirstOrDefault(t => t.Name == HT);
+            FootballTeam ft = teams.FirstOrDefault(t => t.Name == HT)!;
             if (ft == null)
             {
                 FootballTeam ftN = new FootballTeam
@@ -252,7 +252,7 @@ public class FootballRepository : IFootballRepository
                     MatchesLost = record.HTResult == "L" ? 1 : 0,
                     MatchesDraw = record.HTResult == "D" ? 1 : 0,
                     Description = "",
-                    GoalsScored = int.Parse(record.Score.Split(":")[0]),
+                    GoalsScored = int.Parse(record.Score!.Split(":")[0]),
                     GoalsLost = int.Parse(record.Score.Split(":")[1]),
                     GoalDifference = 0,
                     MatchesPlayed = 1
@@ -263,7 +263,7 @@ public class FootballRepository : IFootballRepository
             ***REMOVED***
             else
             {
-                ft.GoalsScored += int.Parse(record.Score.Split(":")[0]);
+                ft.GoalsScored += int.Parse(record.Score!.Split(":")[0]);
                 ft.GoalsLost += int.Parse(record.Score.Split(":")[1]);
                 ft.MatchesWon += record.HTResult == "W" ? 1 : 0;
                 ft.MatchesLost += record.HTResult == "L" ? 1 : 0;
@@ -272,7 +272,7 @@ public class FootballRepository : IFootballRepository
             ***REMOVED***
 
             
-            FootballTeam aft = teams.FirstOrDefault(t => t.Name == AT);
+            FootballTeam aft = teams.FirstOrDefault(t => t.Name == AT)!;
             if (aft == null)
             {
                 FootballTeam ftN = new FootballTeam
