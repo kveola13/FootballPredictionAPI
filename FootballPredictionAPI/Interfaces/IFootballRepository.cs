@@ -1,5 +1,6 @@
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FootballPredictionAPI.Interfaces;
 
@@ -20,4 +21,5 @@ public interface IFootballRepository
 
     Task PopulateTeams();
     Task PopulateMatches();
+    Task<ActionResult<string>> PredictResult(string team1, string team2);
 }
