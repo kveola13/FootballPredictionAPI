@@ -129,9 +129,9 @@ namespace FootballPredictionAPI.Controllers
 
         [Obsolete("Not needed after population is done")]
         [HttpPost("populateteams")]
-        public async Task PopulateTeams()
+        public void PopulateTeams()
         {
-            await _repository.PopulateTeams();
+            _repository.PopulateTeams();
         }
         
         [Obsolete("Not needed after initial population of db")]
