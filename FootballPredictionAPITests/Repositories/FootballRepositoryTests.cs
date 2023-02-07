@@ -69,7 +69,6 @@ namespace FootballPredictionAPI.Repositories.Tests
         [TestMethod("Get football team by id")]
         public void GetFootballTeamByIdTest()
         {
-
             _repository!.Setup<Task<FootballTeamDTO>>(
                 rep => rep.GetFootballTeamById("Test-01")!
             ).Returns(Task.FromResult(footballTeamDTO!));
