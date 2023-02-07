@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Net.Http.Headers;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using FootballPredictionAPI.Models;
 using FootballPredictionAPI.DTOs;
@@ -17,6 +18,21 @@ namespace FootballPredictionAPI.Controllers
         {
             _mapper = mapper;
             _repository = repository;
+        }
+
+        [HttpGet("predict/{team1}/{team2}")]
+        public async Task<ActionResult<string>> PredictResult(string team1, string team2)
+        {
+            // Get teams and check if exist
+            var HomeTeam = _repository.GetFootballTeamByName(team1);
+            var AwayTeam = _repository.GetFootballTeamByName(team2);
+            if (HomeTeam == null || AwayTeam == null)
+            {
+                return NotFound("Team(s) not found!");
+            }
+
+            
+            return await _repository.PredictResult(team1, team2);
         }
 
         [Obsolete("This will no longer be needed after a CosmosDB integration")]
@@ -113,9 +129,9 @@ namespace FootballPredictionAPI.Controllers
 
         [Obsolete("Not needed after population is done")]
         [HttpPost("populateteams")]
-        public async Task PopulateTeams()
+        public void PopulateTeams()
         {
-            await _repository.PopulateTeams();
+            _repository.PopulateTeams();
         }
         
         [Obsolete("Not needed after initial population of db")]
