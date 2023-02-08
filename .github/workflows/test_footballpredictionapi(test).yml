@@ -1,25 +1,26 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - footballpredictionapi
+name: Build and deploy app to Deployment slot Test - footballpredictionapi
 
 on:
   push:
     branches:
       - test
   workflow_dispatch:
-
+env:
+  DOTNET_CORE_VERSION: 7.0.x
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '3.1'
+          dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
           include-prerelease: true
 
       - name: Build with dotnet
