@@ -9,6 +9,7 @@ using FootballPredictionAPI.Models;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using CsvHelper;
 using Microsoft.AspNetCore.Mvc;
 
@@ -119,7 +120,7 @@ public class FootballRepository : IFootballRepository
             }
           
         }
-        return null;
+        return null!;
     }
 
     public async Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeam)
@@ -222,7 +223,7 @@ public class FootballRepository : IFootballRepository
     }
     
     [Obsolete("This will no longer be needed after CosmosDB population")]
-    public async Task PopulateTeams()
+    public void PopulateTeams()
     {
         // TO DO: Check if container exists, create if not
         
@@ -237,10 +238,10 @@ public class FootballRepository : IFootballRepository
         foreach (var record in records)
         {
             Console.WriteLine(record.Score);
-            string HT = record.HomeTeam;
-            string AT = record.AwayTeam;
+            string HT = record.HomeTeam!;
+            string AT = record.AwayTeam!;
             Console.WriteLine(HT + ", " + AT);
-            FootballTeam ft = teams.FirstOrDefault(t => t.Name == HT);
+            FootballTeam ft = teams.FirstOrDefault(t => t.Name == HT)!;
             if (ft == null)
             {
                 FootballTeam ftN = new FootballTeam
@@ -251,7 +252,7 @@ public class FootballRepository : IFootballRepository
                     MatchesLost = record.HTResult == "L" ? 1 : 0,
                     MatchesDraw = record.HTResult == "D" ? 1 : 0,
                     Description = "",
-                    GoalsScored = int.Parse(record.Score.Split(":")[0]),
+                    GoalsScored = int.Parse(record.Score!.Split(":")[0]),
                     GoalsLost = int.Parse(record.Score.Split(":")[1]),
                     GoalDifference = 0,
                     MatchesPlayed = 1
@@ -262,7 +263,7 @@ public class FootballRepository : IFootballRepository
             }
             else
             {
-                ft.GoalsScored += int.Parse(record.Score.Split(":")[0]);
+                ft.GoalsScored += int.Parse(record.Score!.Split(":")[0]);
                 ft.GoalsLost += int.Parse(record.Score.Split(":")[1]);
                 ft.MatchesWon += record.HTResult == "W" ? 1 : 0;
                 ft.MatchesLost += record.HTResult == "L" ? 1 : 0;
@@ -271,7 +272,7 @@ public class FootballRepository : IFootballRepository
             }
 
             
-            FootballTeam aft = teams.FirstOrDefault(t => t.Name == AT);
+            FootballTeam aft = teams.FirstOrDefault(t => t.Name == AT)!;
             if (aft == null)
             {
                 FootballTeam ftN = new FootballTeam
@@ -337,7 +338,84 @@ public class FootballRepository : IFootballRepository
         }
         
     }
-    
+
+    public async Task<ActionResult<string>> PredictResult(string team1, string team2)
+    {
+        var handler = new HttpClientHandler()
+        {
+            ClientCertificateOptions = ClientCertificateOption.Manual,
+            ServerCertificateCustomValidationCallback =
+                (httpRequestMessage, cert, cetChain, policyErrors) => { return true; }
+        };
+        using (var client = new HttpClient(handler))
+        {
+            // Request data goes here
+            // The example below assumes JSON formatting which may be updated
+            // depending on the format your endpoint expects.
+            // More information can be found here:
+            // https://docs.microsoft.com/azure/machine-learning/how-to-deploy-advanced-entry-script
+            var requestBody = @"{
+                  ""Inputs"": {
+                    ""input1"": [
+                      {
+                        ""HomeTeam"": ""Sevilla"",
+                        ""AwayTeam"": ""Barcelona""
+                      }
+                    ]
+                  },
+                  ""GlobalParameters"": {}
+                }";
+                
+            // Replace this with the primary/secondary key or AMLToken for the endpoint
+            var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUriPred")!);
+            var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
+            var url = secretClient.GetSecretAsync("prediction-endpoint-url").Result.Value.Value;
+            var apiKey = secretClient.GetSecretAsync("prediction-endpoint-api-key").Result.Value.Value;
+
+            if (string.IsNullOrEmpty(apiKey))  
+            {
+                throw new Exception("A key should be provided to invoke the endpoint");
+            }
+            
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( "Bearer", apiKey);
+            client.BaseAddress = new Uri(url);
+
+            var content = new StringContent(requestBody);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            // WARNING: The 'await' statement below can result in a deadlock
+            // if you are calling this code from the UI thread of an ASP.Net application.
+            // One way to address this would be to call ConfigureAwait(false)
+            // so that the execution does not attempt to resume on the original context.
+            // For instance, replace code such as:
+            //      result = await DoSomeTask()
+            // with the following:
+            //      result = await DoSomeTask().ConfigureAwait(false)
+            HttpResponseMessage response = await client.PostAsync("", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string result = await response.Content.ReadAsStringAsync();
+                string predictions = String.Format("Result: {0}", result);
+                Console.WriteLine(predictions);
+                return predictions;
+            }
+            else
+            {
+                
+                Console.WriteLine(string.Format("The request failed with status code: {0}", response.StatusCode));
+
+                // Print the headers - they include the requert ID and the timestamp,
+                // which are useful for debugging the failure
+                Console.WriteLine(response.Headers.ToString());
+
+                string responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(responseContent);
+                return string.Format("The request failed with status code: {0}", response.StatusCode);
+            }
+        }
+    }
+
     public async Task<FootballTeam?> AddFootballTeam(FootballTeam footballTeam)
     {
         CreateDatabaseConnection(out _, out Container container);

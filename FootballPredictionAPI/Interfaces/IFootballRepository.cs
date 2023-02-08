@@ -1,5 +1,6 @@
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FootballPredictionAPI.Interfaces;
 
@@ -18,6 +19,7 @@ public interface IFootballRepository
     [Obsolete("Not needed after update")]
     bool FootballTeamTableExists();
 
-    Task PopulateTeams();
+    void PopulateTeams();
     Task PopulateMatches();
+    Task<ActionResult<string>> PredictResult(string team1, string team2);
 }
