@@ -1,4 +1,4 @@
-name: Build and deploy .NET Core application to Web App FootballPredictionAPI with API Management Service FootballPredictionAMS-FootballPredictionAPI
+name: Build and deploy application to Web App FootballPredictionAPI
 on:
   push:
   pull_request:
