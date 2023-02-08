@@ -21,6 +21,7 @@ env:
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 7.0.x
   WORKING_DIRECTORY: FootballPredictionAPI
+  TEST_DIRECTORY: FootballPredictionAPITests
 jobs:
   build:
     runs-on: windows-latest
@@ -39,12 +40,12 @@ jobs:
     - name: Build
       run: dotnet build ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED*** --configuration ${{ env.CONFIGURATION ***REMOVED******REMOVED*** --no-restore
     - name: Test
-      run: dotnet test ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED*** --no-build
+      run: dotnet test --no-build # ${{ env.TEST_DIRECTORY ***REMOVED******REMOVED*** --no-build
     - name: Publish
       run: dotnet publish ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED*** --configuration ${{ env.CONFIGURATION ***REMOVED******REMOVED*** --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED***
-    - name: Install Swashbuckle CLI .NET Global Tool
-      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION ***REMOVED******REMOVED***
-      working-directory: ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED***
+    #- name: Install Swashbuckle CLI .NET Global Tool
+    #  run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION ***REMOVED******REMOVED***
+    #  working-directory: ${{ env.WORKING_DIRECTORY ***REMOVED******REMOVED***
     #- name: Generate Open API Specification Document
     #  run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH ***REMOVED******REMOVED***" "${{ env.API_IMPORT_DLL ***REMOVED******REMOVED***" "${{ env.API_IMPORT_VERSION ***REMOVED******REMOVED***"
     - name: Publish Artifacts
