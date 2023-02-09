@@ -8,7 +8,6 @@ using FootballPredictionAPI.Interfaces;
 using FootballPredictionAPI.Models;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
-using System.Net;
 using System.Net.Http.Headers;
 using CsvHelper;
 using Microsoft.AspNetCore.Mvc;

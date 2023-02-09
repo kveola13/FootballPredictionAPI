@@ -1,24 +1,25 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Interfaces;
 using FootballPredictionAPI.Models;
-using System.Diagnostics;
+using FootballPredictionAPI.Repositories;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using FootballPredictionAPI.DTOs;
+using System.Diagnostics;
 
-namespace FootballPredictionAPI.Repositories
+namespace FootballPredictionAPITests.Repositories.Tests
 {
     [TestClass()]
-    public class FootballRepositoryTests
+    public class AdminFootballRepositoryTests
     {
-        private readonly Mock<IFootballRepository>? _repository;
-        private readonly FootballRepository? _footballRepository;
+        private readonly Mock<IAdminFootballRepository>? _repository;
+        private readonly AdminFootballRepository? _footballRepository;
         private FootballTeam? footballTeam;
         private FootballTeamDTO? footballTeamDTO;
 
-        public FootballRepositoryTests()
+        public AdminFootballRepositoryTests()
         {
-            _repository = new Mock<IFootballRepository>();
-            _footballRepository = new FootballRepository(null!,null!,null!);
+            _repository = new Mock<IAdminFootballRepository>();
+            _footballRepository = new AdminFootballRepository(null!, null!, null!);
         }
 
         [TestInitialize]
@@ -53,13 +54,13 @@ namespace FootballPredictionAPI.Repositories
         [TestMethod("Get football teams")]
         public void GetFootballTeamsTest()
         {
-            var teamList = new List<FootballTeamDTO>() {
-                new FootballTeamDTO(),
-                new FootballTeamDTO()
+            var teamList = new List<FootballTeam>() {
+                new FootballTeam(),
+                new FootballTeam()
             };
-            _repository!.Setup<Task<IEnumerable<FootballTeamDTO>>>(
+            _repository!.Setup<Task<IEnumerable<FootballTeam>>>(
                 rep => rep.GetFootballTeams()!
-            ).Returns(Task.FromResult<IEnumerable<FootballTeamDTO>>(teamList));
+            ).Returns(Task.FromResult<IEnumerable<FootballTeam>>(teamList));
             var result = _repository.Object.GetFootballTeams().Result;
 
             Assert.AreEqual(teamList, result);
@@ -69,24 +70,24 @@ namespace FootballPredictionAPI.Repositories
         [TestMethod("Get football team by id")]
         public void GetFootballTeamByIdTest()
         {
-            _repository!.Setup<Task<FootballTeamDTO>>(
+            _repository!.Setup<Task<FootballTeam>>(
                 rep => rep.GetFootballTeamById("Test-01")!
-            ).Returns(Task.FromResult(footballTeamDTO!));
+            ).Returns(Task.FromResult(footballTeam!));
 
             var result = _repository.Object.GetFootballTeamById("Test-01").Result;
 
-            Assert.AreEqual(footballTeamDTO, result);
+            Assert.AreEqual(footballTeam, result);
         }
 
         [TestMethod("Get football team by name")]
         public void GetFootballTeamByNameTest()
         {
-            _repository!.Setup<Task<FootballTeamDTO>>(
-                rep => rep.GetFootballTeamByName("Test-DTO")!
-            ).Returns(Task.FromResult(footballTeamDTO!));
-            var result = _repository.Object.GetFootballTeamByName("Test-DTO").Result;
+            _repository!.Setup<Task<FootballTeam>>(
+                rep => rep.GetFootballTeamByName("Test name")!
+            ).Returns(Task.FromResult(footballTeam!));
+            var result = _repository.Object.GetFootballTeamByName("Test name").Result;
 
-            Assert.AreEqual(footballTeamDTO, result);
+            Assert.AreEqual(footballTeam, result);
         }
 
         [TestMethod("Update football team")]
@@ -107,7 +108,7 @@ namespace FootballPredictionAPI.Repositories
             ).Returns(Task.FromResult(updatedTeam));
 
             Assert.AreNotEqual(updatedTeam, footballTeam);
-            
+
             var result = _repository.Object.UpdateFootballTeam("test", updatedTeam).Result;
 
             Assert.AreEqual(updatedTeam, result);
@@ -116,8 +117,9 @@ namespace FootballPredictionAPI.Repositories
         [TestMethod("Add a football team")]
         public void AddFootballTeamTest()
         {
-            var teamToAdd = new FootballTeamDTO()
+            var teamToAdd = new FootballTeam()
             {
+                Id = "Add test id",
                 Name = "add test",
                 Description = "add test",
                 MatchesWon = 2,
@@ -126,7 +128,7 @@ namespace FootballPredictionAPI.Repositories
             };
             var teamToReturn = new FootballTeam()
             {
-                Id="Add test id",
+                Id = "Add test id",
                 Name = "add test",
                 Description = "add test",
                 MatchesWon = 2,
@@ -153,11 +155,11 @@ namespace FootballPredictionAPI.Repositories
                 rep => rep.DeleteFootballTeamById("Test-01")!
             ).Returns(Task.FromResult(footballTeam!));
 
-            FootballTeamDTO dto = null!;
+            FootballTeam team = null!;
 
-            _repository!.Setup<Task<FootballTeamDTO>>(
+            _repository!.Setup<Task<FootballTeam>>(
                 rep => rep.GetFootballTeamById("Test-01")!
-            ).Returns(Task.FromResult(dto!));
+            ).Returns(Task.FromResult(team!));
 
             var result = _repository.Object.DeleteFootballTeamById("Test-01").Result;
             var getTeam = _repository.Object.GetFootballTeamById("Test-01").Result;
@@ -170,17 +172,17 @@ namespace FootballPredictionAPI.Repositories
         public void DeleteFootballTeamByNameTest()
         {
             _repository!.Setup<Task<FootballTeam>>(
-                rep => rep.DeleteFootballTeamByName("Test-DTO")!
+                rep => rep.DeleteFootballTeamByName("Test name")!
             ).Returns(Task.FromResult(footballTeam!));
-            var result = _repository.Object.DeleteFootballTeamByName("Test-DTO").Result;
+            var result = _repository.Object.DeleteFootballTeamByName("Test name").Result;
 
-            FootballTeamDTO nullValueDTO = null!;
+            FootballTeam nullValueTeam = null!;
 
-            _repository!.Setup<Task<FootballTeamDTO>>(
-                rep => rep.GetFootballTeamByName("Test-DTO")!
-            ).Returns(Task.FromResult(nullValueDTO!));
+            _repository!.Setup<Task<FootballTeam>>(
+                rep => rep.GetFootballTeamByName("Test name")!
+            ).Returns(Task.FromResult(nullValueTeam!));
 
-            var getTeam = _repository.Object.GetFootballTeamByName("Test-DTO").Result;
+            var getTeam = _repository.Object.GetFootballTeamByName("Test name").Result;
 
             Assert.AreEqual(result, footballTeam);
             Assert.IsNull(getTeam);
