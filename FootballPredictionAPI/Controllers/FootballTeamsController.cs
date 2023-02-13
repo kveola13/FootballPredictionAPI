@@ -20,6 +20,12 @@ namespace FootballPredictionAPI.Controllers
             _repository = repository;
         }
 
+        [HttpGet("getnewmatches")]
+        public async Task GetNewMatches()
+        {
+            await _repository.GetNewMatches();
+        }
+
         [HttpGet("predict/{team1}/{team2}")]
         public async Task<ActionResult<string>> PredictResult(string team1, string team2)
         {

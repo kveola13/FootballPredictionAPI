@@ -22,12 +22,38 @@ public class FootballRepository : IFootballRepository
     private readonly IConfiguration _configuration;
     private readonly string containerName = "teams";
     private readonly string macthesContainer = "matches";
+    private readonly string queueContainer = "matchesqueue";
 
     public FootballRepository(FootballTeamContext context, IMapper mapper, IConfiguration configuration)
     {
         _context = context;
         _mapper = mapper;
         _configuration = configuration;
+    }
+
+    public async Task GetNewMatches()
+    {
+        // Connect to queue db
+        // Read matches played before DateTime.Now
+        // If many, select n first (played longest ago)
+        
+        CreateQueueConnection(out _, out Container container);
+        QueryDefinition query = new QueryDefinition("select * from c where c.Date < NOW() order by c.Date limit 2");
+        var dbContainerResponse = container.GetItemQueryIterator<Match>(query);
+        List<Match> URIs = new List<Match>();
+        while (dbContainerResponse.HasMoreResults)
+        {
+            FeedResponse<Match> response = await dbContainerResponse.ReadNextAsync();
+            foreach (var match in response)
+            {
+                URIs.Add(match);
+            }
+        }
+        
+        // Read content 
+        // Create Match objects
+        // Update Teams
+        // Add to db
     }
     public async Task<IEnumerable<FootballTeamDTO?>> GetFootballTeams()
     {
@@ -448,6 +474,21 @@ public class FootballRepository : IFootballRepository
             authKeyOrResourceToken: accountKey!
         );
         container = client.GetContainer(dbName, containerName);
+    }
+    
+    private void CreateQueueConnection(out CosmosClient client, out Container container)
+    {
+        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUriPred")!);
+        var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
+        var accountEndpoint = secretClient.GetSecretAsync("queueURI").Result.Value.Value;
+        var accountKey = secretClient.GetSecretAsync("queuePK").Result.Value.Value;
+        var dbName = secretClient.GetSecretAsync("queueDBname").Result.Value.Value;
+        client = new
+        (
+            accountEndpoint: accountEndpoint,
+            authKeyOrResourceToken: accountKey!
+        );
+        container = client.GetContainer(dbName, queueContainer);
     }
 
     private void CreateContainerMatches(out CosmosClient client, out Container container)
