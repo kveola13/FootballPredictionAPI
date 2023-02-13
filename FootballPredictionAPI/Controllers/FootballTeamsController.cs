@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using FootballPredictionAPI.Models;
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Interfaces;
+using Microsoft.CodeAnalysis.Differencing;
 
 namespace FootballPredictionAPI.Controllers
 {
@@ -21,11 +22,22 @@ namespace FootballPredictionAPI.Controllers
         }
 
         [HttpGet("getnewmatches")]
-        public async Task GetNewMatches()
+        public async Task<ActionResult<IEnumerable<Match>>> GetNewMatches()
         {
-            await _repository.GetNewMatches();
-        }
+            var newMatches = await _repository.GetNewMatches();
+            foreach (var match in newMatches)
+            {
+                // Read stats 
+                // Save to FootballMatch object
+                // Add to db
+                // Update teams
+                // Remove from queue
+            }
 
+            return null;
+        }
+        
+        [Obsolete("One time job & has been run already")]
         [HttpPost("populatematchestocome")]
         public async Task PopulateMatchesToCome()
         {
