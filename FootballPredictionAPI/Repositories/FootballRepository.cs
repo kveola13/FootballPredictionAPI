@@ -13,6 +13,8 @@ using System.Net.Http.Headers;
 using CsvHelper;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Graph;
+using File = System.IO.File;
 
 namespace FootballPredictionAPI.Repositories;
 
@@ -53,13 +55,57 @@ public class FootballRepository : IFootballRepository
                 URIs.Add(match);
             ***REMOVED***
         ***REMOVED***
-        
         return URIs;
     ***REMOVED***
 
-    public async Task<IEnumerable<Match>> DeleteFromQueue(IEnumerable<Match> matches)
+    public async Task<FootballMatch> ReadStatsForMatch(Match match)
     {
-        return null;
+        // Get site from match.StatsUrl
+        HtmlWeb web = new HtmlWeb();
+        HtmlDocument doc = web.Load(match.StatsUrl);
+        // Get stats
+        // Save in a FootballMatch object
+        FootballMatch fm = _webCrawler.ReadStatsForMatch(match);
+        return fm;
+    ***REMOVED***
+
+    public async Task<FootballMatch> AddFootballMatchWithStats(FootballMatch footballMatchesWithStats)
+    {
+        CreateContainerMatches(out _, out Container container);
+        footballMatchesWithStats.Id = Guid.NewGuid().ToString();
+        var createResponse = await container.CreateItemAsync(footballMatchesWithStats);
+        return createResponse;
+    ***REMOVED***
+
+    public async Task<IEnumerable<Match>> DeleteFromQueue(IEnumerable<Match> matchesToDelete)
+    {
+        CreateContainerMatches(out _, out Container container);
+        List<FootballMatch> deleted = new List<FootballMatch>();
+        foreach (var m in matchesToDelete)
+        {
+            IOrderedQueryable<FootballMatch> queryable = container.GetItemLinqQueryable<FootballMatch>();
+            var matches = queryable
+                .Where(fm => fm.Id!.Equals(m.Id));
+            using FeedIterator<FootballMatch> linqFeed = matches.ToFeedIterator();
+            while (linqFeed.HasMoreResults)
+            {
+                FeedResponse<FootballMatch> response = await linqFeed.ReadNextAsync();
+                var match = response.FirstOrDefault();
+                await container.DeleteItemAsync<FootballMatch>(match!.Id, new PartitionKey(match!.Id));
+                deleted.Add(match);
+            ***REMOVED***
+        ***REMOVED***
+        return deleted;  
+    ***REMOVED***
+
+    public Task<FootballTeam> UpdateHomeFootballTeam(FootballMatch footballMatch)
+    {
+        throw new NotImplementedException();
+    ***REMOVED***
+
+    public Task<FootballTeam> UpdateAwayFootballTeam(FootballMatch footballMatch)
+    {
+        throw new NotImplementedException();
     ***REMOVED***
 
     public async Task<IEnumerable<FootballMatch>> AddNewMatch(Match match)
@@ -303,7 +349,7 @@ public class FootballRepository : IFootballRepository
 
     ***REMOVED***
     
-    [Obsolete("This will no longer be needed after CosmosDB population")]
+    /*[Obsolete("This will no longer be needed after CosmosDB population")]
     public void PopulateTeams()
     {
         // TO DO: Check if container exists, create if not
@@ -318,7 +364,6 @@ public class FootballRepository : IFootballRepository
 
         foreach (var record in records)
         {
-            Console.WriteLine(record.Score);
             string HT = record.HomeTeam!;
             string AT = record.AwayTeam!;
             Console.WriteLine(HT + ", " + AT);
@@ -329,12 +374,12 @@ public class FootballRepository : IFootballRepository
                 {
                     Name = HT,
                     Points = 0,
-                    MatchesWon = record.HTResult == "W" ? 1 : 0,
-                    MatchesLost = record.HTResult == "L" ? 1 : 0,
-                    MatchesDraw = record.HTResult == "D" ? 1 : 0,
+                    MatchesWon = record.HTGoals > record.ATGoals ? 1 : 0,
+                    MatchesLost = record.HTGoals < record.ATGoals ? 1 : 0,
+                    MatchesDraw = record.HTGoals == record.ATGoals ? 1 : 0,
                     Description = "",
-                    GoalsScored = int.Parse(record.Score!.Split(":")[0]),
-                    GoalsLost = int.Parse(record.Score.Split(":")[1]),
+                    GoalsScored = (int)(record.HTGoals),
+                    GoalsLost = (int)(record.ATGoals),
                     GoalDifference = 0,
                     MatchesPlayed = 1
                 ***REMOVED***;
@@ -344,11 +389,11 @@ public class FootballRepository : IFootballRepository
             ***REMOVED***
             else
             {
-                ft.GoalsScored += int.Parse(record.Score!.Split(":")[0]);
-                ft.GoalsLost += int.Parse(record.Score.Split(":")[1]);
-                ft.MatchesWon += record.HTResult == "W" ? 1 : 0;
-                ft.MatchesLost += record.HTResult == "L" ? 1 : 0;
-                ft.MatchesDraw += record.HTResult == "D" ? 1 : 0;
+                ft.GoalsScored += (int)record.HTGoals;
+                ft.GoalsLost += (int)record.ATGoals;
+                ft.MatchesWon += record.HTGoals > record.ATGoals ? 1 : 0;
+                ft.MatchesLost += record.HTGoals < record.ATGoals ? 1 : 0;
+                ft.MatchesDraw += record.HTGoals == record.ATGoals ? 1 : 0;
                 ft.Points = CalculatePoints(ft);
             ***REMOVED***
 
@@ -391,8 +436,13 @@ public class FootballRepository : IFootballRepository
             var postTeam = AddFootballTeam(team);
         ***REMOVED***
         var updateTeam = UpdateAllTeams();
+    ***REMOVED****/
+
+    public void PopulateTeams()
+    {
+        // Nothing
     ***REMOVED***
-    
+
     [Obsolete("Not needed after initial population of db")]
     public async Task PopulateMatches()
     {

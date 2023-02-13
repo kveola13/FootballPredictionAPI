@@ -24,4 +24,9 @@ public interface IFootballRepository
     Task<ActionResult<string>> PredictResult(string team1, string team2);
     Task<IEnumerable<Match>> GetNewMatches();
     Task PopulateMatchesToCome();
+    Task<FootballMatch> ReadStatsForMatch(Match match);
+    Task<FootballMatch> AddFootballMatchWithStats(FootballMatch footballMatchesWithStats);
+    Task<IEnumerable<Match>> DeleteFromQueue(IEnumerable<Match> matchesToDelete);
+    Task<FootballTeam> UpdateHomeFootballTeam(FootballMatch footballMatch);
+    Task<FootballTeam> UpdateAwayFootballTeam(FootballMatch footballMatch);
 ***REMOVED***
