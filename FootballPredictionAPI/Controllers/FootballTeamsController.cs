@@ -20,6 +20,12 @@ namespace FootballPredictionAPI.Controllers
             _repository = repository;
         ***REMOVED***
 
+        [HttpGet("getnewmatches")]
+        public async Task GetNewMatches()
+        {
+            await _repository.GetNewMatches();
+        ***REMOVED***
+
         [HttpGet("predict/{team1***REMOVED***/{team2***REMOVED***")]
         public async Task<ActionResult<string>> PredictResult(string team1, string team2)
         {
