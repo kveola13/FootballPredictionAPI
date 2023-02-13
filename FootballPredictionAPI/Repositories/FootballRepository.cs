@@ -34,14 +34,14 @@ public class FootballRepository : IFootballRepository
         _webCrawler = new WebCrawler.WebCrawler();
     ***REMOVED***
 
-    public async Task GetNewMatches()
+    public async Task<IEnumerable<Match>> GetNewMatches()
     {
         // Connect to queue db
         // Read matches played before DateTime.Now
         // If many, select n first (played longest ago)
         
         CreateQueueConnection(out _, out Container container);
-        QueryDefinition query = new QueryDefinition("select * from c where c.Date < NOW() order by c.Date limit 2");
+        QueryDefinition query = new QueryDefinition("select top 10 * from c where c.Date < '2023-02-31' order by c.Date");
         var dbContainerResponse = container.GetItemQueryIterator<Match>(query);
         List<Match> URIs = new List<Match>();
         while (dbContainerResponse.HasMoreResults)
@@ -49,15 +49,29 @@ public class FootballRepository : IFootballRepository
             FeedResponse<Match> response = await dbContainerResponse.ReadNextAsync();
             foreach (var match in response)
             {
+                Console.WriteLine(match);
                 URIs.Add(match);
             ***REMOVED***
         ***REMOVED***
         
-        // Read content 
-        // Create Match objects
-        // Update Teams
-        // Add to db
+        return URIs;
     ***REMOVED***
+
+    public async Task<IEnumerable<Match>> DeleteFromQueue(IEnumerable<Match> matches)
+    {
+        return null;
+    ***REMOVED***
+
+    public async Task<IEnumerable<FootballMatch>> AddNewMatch(Match match)
+    {
+        return null;
+    ***REMOVED***
+
+    public async Task<FootballTeam> UpdateTeam()
+    {
+        return null;
+    ***REMOVED***
+
     [Obsolete("One time job & has been run already")]
     public async Task PopulateMatchesToCome()
     {
