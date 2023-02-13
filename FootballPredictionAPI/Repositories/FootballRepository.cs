@@ -11,6 +11,7 @@ using Microsoft.Azure.Cosmos.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using CsvHelper;
+using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FootballPredictionAPI.Repositories;
@@ -23,12 +24,14 @@ public class FootballRepository : IFootballRepository
     private readonly string containerName = "teams";
     private readonly string macthesContainer = "matches";
     private readonly string queueContainer = "matchesqueue";
+    private readonly WebCrawler.WebCrawler _webCrawler;
 
     public FootballRepository(FootballTeamContext context, IMapper mapper, IConfiguration configuration)
     {
         _context = context;
         _mapper = mapper;
         _configuration = configuration;
+        _webCrawler = new WebCrawler.WebCrawler();
     ***REMOVED***
 
     public async Task GetNewMatches()
@@ -54,6 +57,44 @@ public class FootballRepository : IFootballRepository
         // Create Match objects
         // Update Teams
         // Add to db
+    ***REMOVED***
+    [Obsolete("One time job & has been run already")]
+    public async Task PopulateMatchesToCome()
+    {
+        Console.WriteLine("POPULATE MATCHESTOCOME _repository");
+        // Read from main page with results
+        // For each gameweek
+        var matchDays = _webCrawler.GetMatchDays();
+        Console.WriteLine(matchDays.Count);
+        List<Match> matches = new List<Match>();
+        foreach (var matchday in matchDays)
+        {
+            Console.WriteLine(matchday);
+            var lines = _webCrawler.GetMatchDayResults(matchday);
+            var linesToMatches = new List<Match>();
+            foreach (var data in lines)
+            {
+                if (!data[3].Any(char.IsDigit))
+                {
+                    var m = new Match();
+                    m.ReadValues(data);
+                    linesToMatches.Add(m);
+                ***REMOVED***
+            ***REMOVED***
+            matches = matches.Concat(linesToMatches).ToList();
+        ***REMOVED***
+        // Connect to db container 
+        
+        CreateQueueConnection(out _, out Container container);
+        
+        // Add matches to db
+        foreach (var match in matches)
+        {
+            match.Id = Guid.NewGuid().ToString();
+            var createItem = await container.CreateItemAsync(match);
+            Console.WriteLine(createItem);
+        ***REMOVED***
+        
     ***REMOVED***
     public async Task<IEnumerable<FootballTeamDTO?>> GetFootballTeams()
     {
