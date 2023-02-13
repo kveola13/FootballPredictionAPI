@@ -1,18 +1,16 @@
-name: Build and deploy application to Web App FootballPredictionAPI
+name: Build and deploy application to Web App footballpredictionapi test deployment slot
 on:
   push:
-  pull_request:
     branches:
-    - main
-
+    - test
 env:
-  AZURE_WEBAPP_NAME: FootballPredictionAPI
+  AZURE_WEBAPP_NAME: footballpredictionapi
   AZURE_WEBAPP_PACKAGE_PATH: FootballPredictionAPI\publish
   AZURE_APIM_RESOURCE_PATH: /
   AZURE_APIM_RESOURCEGROUP: FootballPredictionAPI-rg
   AZURE_APIM_SERVICENAME: FootballPredictionAMS
   AZURE_APIM_API_ID: FootballPredictionAPI
-  AZURE_APIM_APPSERVICEURL: https://footballpredictionapi.azurewebsites.net
+  AZURE_APIM_APPSERVICEURL: https://footballpredictionapi-test.azurewebsites.net
   SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.4.0
   SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
   API_IMPORT_SPECIFICATION_PATH: FootballPredictionAPI\publish\swagger.json
@@ -21,7 +19,7 @@ env:
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 7.0.x
   WORKING_DIRECTORY: FootballPredictionAPI
-  TEST_DIRECTORY: FootballPredictionAPITests
+  AZURE_WEBAPP_SLOT_NAME: test
 jobs:
   build:
     runs-on: windows-latest
@@ -32,7 +30,7 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
     - name: Setup SwashBuckle .NET Core
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v3 
       with:
         dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION }}
     - name: Restore
@@ -67,7 +65,8 @@ jobs:
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        publish-profile: ${{ secrets.FootballPredictionAPI_91BE }}
+        publish-profile: ${{ secrets.footballpredictionapi_test_1A82 }}
+        slot-name: ${{ env.AZURE_WEBAPP_SLOT_NAME }}
     - name: Azure Login
       uses: azure/login@v1
       with:
