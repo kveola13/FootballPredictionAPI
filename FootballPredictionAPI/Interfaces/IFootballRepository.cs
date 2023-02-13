@@ -23,4 +23,5 @@ public interface IFootballRepository
     Task PopulateMatches();
     Task<ActionResult<string>> PredictResult(string team1, string team2);
     Task GetNewMatches();
+    Task PopulateMatchesToCome();
 }

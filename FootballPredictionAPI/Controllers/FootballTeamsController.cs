@@ -26,6 +26,13 @@ namespace FootballPredictionAPI.Controllers
             await _repository.GetNewMatches();
         }
 
+        [HttpPost("populatematchestocome")]
+        public async Task PopulateMatchesToCome()
+        {
+            Console.WriteLine("Controller populate");
+            await _repository.PopulateMatchesToCome();
+        }
+
         [HttpGet("predict/{team1}/{team2}")]
         public async Task<ActionResult<string>> PredictResult(string team1, string team2)
         {
