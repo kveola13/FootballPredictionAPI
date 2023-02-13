@@ -24,14 +24,27 @@ namespace FootballPredictionAPI.Controllers
         [HttpGet("getnewmatches")]
         public async Task<ActionResult<IEnumerable<Match>>> GetNewMatches()
         {
+            List<FootballMatch> fmatches = new List<FootballMatch>();
             var newMatches = await _repository.GetNewMatches();
             foreach (var match in newMatches)
             {
                 // Read stats 
                 // Save to FootballMatch object
+                var footballMatchesWithStats = await _repository.ReadStatsForMatch(match);
+                fmatches.Add(footballMatchesWithStats);
+                
                 // Add to db
+                await _repository.AddFootballMatchWithStats(footballMatchesWithStats);
+
                 // Update teams
+                foreach (var m in fmatches)
+                {
+                    FootballTeam hft = await _repository.UpdateHomeFootballTeam(m);
+                    FootballTeam aft = await _repository.UpdateAwayFootballTeam(m);
+                }
+                
                 // Remove from queue
+                await _repository.DeleteFromQueue(fmatches);
             }
 
             return null;
