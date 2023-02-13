@@ -39,6 +39,7 @@ builder.Services.AddSwaggerGen();
 
 IMapper? mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddScoped<IFootballRepository, FootballRepository>();
+builder.Services.AddScoped<IAdminFootballRepository, AdminFootballRepository>();
 builder.Services.AddSingleton(mapper);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
