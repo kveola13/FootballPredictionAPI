@@ -39,9 +39,9 @@ public class FootballRepository : IFootballRepository
     public async Task<IEnumerable<Match>> GetNewMatches()
     {
         CreateQueueConnection(out _, out Container container);
-        QueryDefinition query = new QueryDefinition("select top 5 * from c where c.Date < GetCurrentDateTime() order by c.Date");
+        QueryDefinition query = new("select top 5 * from c where c.Date < GetCurrentDateTime() order by c.Date");
         var dbContainerResponse = container.GetItemQueryIterator<Match>(query);
-        List<Match> URIs = new List<Match>();
+        List<Match> URIs = new();
         while (dbContainerResponse.HasMoreResults)
         {
             FeedResponse<Match> response = await dbContainerResponse.ReadNextAsync();
@@ -70,7 +70,7 @@ public class FootballRepository : IFootballRepository
     public async Task<IEnumerable<Match>> DeleteFromQueue(IEnumerable<Match> matchesToDelete)
     {
         CreateQueueConnection(out _, out Container container);
-        List<Match> deleted = new List<Match>();
+        List<Match> deleted = new();
         foreach (var m in matchesToDelete)
         {
             IOrderedQueryable<Match> queryable = container.GetItemLinqQueryable<Match>();
@@ -208,7 +208,7 @@ public class FootballRepository : IFootballRepository
         return createTeam;
     ***REMOVED***
 
-    public async Task<FootballTeam?> UpdateHomeTeam(FootballMatch m, FootballTeam t)
+    public FootballTeam? UpdateHomeTeam(FootballMatch m, FootballTeam t)
     {
         t.MatchesWon += m.HTGoals > m.ATGoals ? 1 : 0;
         t.MatchesLost += m.HTGoals < m.ATGoals ? 1 : 0;
@@ -356,14 +356,13 @@ public class FootballRepository : IFootballRepository
             ServerCertificateCustomValidationCallback =
                 (httpRequestMessage, cert, cetChain, policyErrors) => { return true; ***REMOVED***
         ***REMOVED***;
-        using (var client = new HttpClient(handler))
-        {
-            // Request data goes here
-            // The example below assumes JSON formatting which may be updated
-            // depending on the format your endpoint expects.
-            // More information can be found here:
-            // https://docs.microsoft.com/azure/machine-learning/how-to-deploy-advanced-entry-script
-            var requestBody = @"{
+        using var client = new HttpClient(handler);
+        // Request data goes here
+        // The example below assumes JSON formatting which may be updated
+        // depending on the format your endpoint expects.
+        // More information can be found here:
+        // https://docs.microsoft.com/azure/machine-learning/how-to-deploy-advanced-entry-script
+        var requestBody = @"{
                   ""Inputs"": {
                     ""input1"": [
                       {
@@ -374,45 +373,44 @@ public class FootballRepository : IFootballRepository
                   ***REMOVED***,
                   ""GlobalParameters"": {***REMOVED***
                 ***REMOVED***";
-                
-            // Replace this with the primary/secondary key or AMLToken for the endpoint
-            var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUriPred")!);
-            var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
-            var url = secretClient.GetSecretAsync("prediction-endpoint-url").Result.Value.Value;
-            var apiKey = secretClient.GetSecretAsync("prediction-endpoint-api-key").Result.Value.Value;
 
-            if (string.IsNullOrEmpty(apiKey))  
-            {
-                throw new Exception("A key should be provided to invoke the endpoint");
-            ***REMOVED***
-            
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( "Bearer", apiKey);
-            client.BaseAddress = new Uri(url);
+        // Replace this with the primary/secondary key or AMLToken for the endpoint
+        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUriPred")!);
+        var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
+        var url = secretClient.GetSecretAsync("prediction-endpoint-url").Result.Value.Value;
+        var apiKey = secretClient.GetSecretAsync("prediction-endpoint-api-key").Result.Value.Value;
 
-            var content = new StringContent(requestBody);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            throw new Exception("A key should be provided to invoke the endpoint");
+        ***REMOVED***
 
-            // WARNING: The 'await' statement below can result in a deadlock
-            // if you are calling this code from the UI thread of an ASP.Net application.
-            // One way to address this would be to call ConfigureAwait(false)
-            // so that the execution does not attempt to resume on the original context.
-            // For instance, replace code such as:
-            //      result = await DoSomeTask()
-            // with the following:
-            //      result = await DoSomeTask().ConfigureAwait(false)
-            HttpResponseMessage response = await client.PostAsync("", content);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+        client.BaseAddress = new Uri(url);
 
-            if (response.IsSuccessStatusCode)
-            {
-                string result = await response.Content.ReadAsStringAsync();
-                string predictions = String.Format("Result: {0***REMOVED***", result);
-                return predictions;
-            ***REMOVED***
-            else
-            {
-                string responseContent = await response.Content.ReadAsStringAsync();
-                return string.Format("The request failed with status code: {0***REMOVED***", response.StatusCode);
-            ***REMOVED***
+        var content = new StringContent(requestBody);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+        // WARNING: The 'await' statement below can result in a deadlock
+        // if you are calling this code from the UI thread of an ASP.Net application.
+        // One way to address this would be to call ConfigureAwait(false)
+        // so that the execution does not attempt to resume on the original context.
+        // For instance, replace code such as:
+        //      result = await DoSomeTask()
+        // with the following:
+        //      result = await DoSomeTask().ConfigureAwait(false)
+        HttpResponseMessage response = await client.PostAsync("", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            string result = await response.Content.ReadAsStringAsync();
+            string predictions = String.Format("Result: {0***REMOVED***", result);
+            return predictions;
+        ***REMOVED***
+        else
+        {
+            string responseContent = await response.Content.ReadAsStringAsync();
+            return string.Format("The request failed with status code: {0***REMOVED***", response.StatusCode);
         ***REMOVED***
     ***REMOVED***
 

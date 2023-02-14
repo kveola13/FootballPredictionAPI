@@ -25,7 +25,7 @@ namespace FootballPredictionAPI.Controllers
         [HttpGet("getnewmatches")]
         public async Task<ActionResult<IEnumerable<Match>>> GetNewMatches()
         {
-            List<FootballMatch> fmatches = new List<FootballMatch>();
+            List<FootballMatch> fmatches = new();
             var newMatches = await _repository.GetNewMatches();
             if (newMatches.Count() == 0)
             {
@@ -55,7 +55,7 @@ namespace FootballPredictionAPI.Controllers
                 if (homeTeam != null)
                 {
                     FootballTeam? hft = await _repository.UpdateHomeTeam(m, homeTeam);
-                    var responseUpdateht = await _repository.UpdateFootballTeam(hft.Id!, hft);
+                    var responseUpdateht = await _repository.UpdateFootballTeam(hft!.Id!, hft);
                     if (responseUpdateht == null)
                     {
                         return BadRequest("Problems while updating home team!");
@@ -63,7 +63,7 @@ namespace FootballPredictionAPI.Controllers
                 ***REMOVED***
                 else
                 {
-                    FootballTeam hft = new FootballTeam
+                    FootballTeam hft = new()
                     {
                         Name = m.HomeTeam,
                         MatchesWon = m.HTGoals > m.ATGoals ? 1 : 0,
