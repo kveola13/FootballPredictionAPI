@@ -26,7 +26,7 @@ public interface IFootballRepository
     Task<FootballMatch> ReadStatsForMatch(Match match);
     Task<FootballMatch?> AddFootballMatchWithStats(FootballMatch footballMatchesWithStats);
     Task<IEnumerable<Match>> DeleteFromQueue(IEnumerable<Match> matchesToDelete);
-    Task<FootballTeam?> UpdateHomeTeam(FootballMatch footballMatch, FootballTeam footballTeam);
+    FootballTeam? UpdateHomeTeam(FootballMatch footballMatch, FootballTeam footballTeam);
     Task<FootballTeam?> UpdateAwayTeam(FootballMatch footballMatch, FootballTeam footballTeam);
     Task<FootballTeam?> GetTeamByName(string teamName);
     Task<FootballTeam?> AddTeam(FootballTeam ft);
