@@ -103,13 +103,6 @@ public class WebCrawler
         return matchDays;
     }
 
-    public HtmlDocument ReadDocFromUrl(string url)
-    {
-        HtmlDocument htmlDocument = new HtmlDocument();
-        htmlDocument.LoadHtml(url);
-        return htmlDocument;
-    }
-
     public FootballMatch ReadStatsForMatch(Match match)
     {
         HtmlWeb web = new HtmlWeb();
@@ -137,14 +130,12 @@ public class WebCrawler
                 }
             }
         }
-
         FootballMatch mp = _mapper.Map<FootballMatch>(dict);
 
         foreach (PropertyInfo property in typeof(Match).GetProperties().Where(p => p.CanWrite))
         {
             property.SetValue(mp, property.GetValue(match, null), null);
         }
-
         return mp;
     }
 }

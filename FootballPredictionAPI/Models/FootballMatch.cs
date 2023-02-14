@@ -33,7 +33,8 @@ public class FootballMatch : Match
     
     public override string ToString()
     {
-        string str = Date.ToString() + " - " + HomeTeam + " " + HTGoals + ":" + ATGoals + " " + AwayTeam + "(" + HTPossession + "-" + ATPossession + ")";
+        string str = Date.ToString() + " - " + HomeTeam + " " + HTGoals + ":" + ATGoals + " " + AwayTeam 
+                     + "(" + HTPossession + "-" + ATPossession + ", " + HTCornerstaken + "-" + ATCornerstaken + ")";
         return str;
     }
 }
