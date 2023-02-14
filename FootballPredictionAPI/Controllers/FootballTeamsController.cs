@@ -55,7 +55,7 @@ namespace FootballPredictionAPI.Controllers
                 if (homeTeam != null)
                 {
                     FootballTeam? hft = await _repository.UpdateHomeTeam(m, homeTeam);
-                    var responseUpdateht = await _repository.UpdateFootballTeam(hft.Id, hft);
+                    var responseUpdateht = await _repository.UpdateFootballTeam(hft.Id!, hft);
                     if (responseUpdateht == null)
                     {
                         return BadRequest("Problems while updating home team!");
@@ -85,7 +85,7 @@ namespace FootballPredictionAPI.Controllers
                 if (awayTeam != null)
                 {
                     FootballTeam? aft = await _repository.UpdateAwayTeam(m, awayTeam);
-                    var responseUpdateAt = await _repository.UpdateFootballTeam(aft.Id, aft);
+                    var responseUpdateAt = await _repository.UpdateFootballTeam(aft.Id!, aft);
                     if (responseUpdateAt == null)
                     {
                         return BadRequest("Problems while updating Away Team!");

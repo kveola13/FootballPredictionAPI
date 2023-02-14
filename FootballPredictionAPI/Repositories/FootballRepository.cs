@@ -53,7 +53,7 @@ public class FootballRepository : IFootballRepository
         return URIs;
     ***REMOVED***
 
-    public async Task<FootballMatch> ReadStatsForMatch(Match match)
+    public FootballMatch ReadStatsForMatch(Match match)
     {
         FootballMatch fm = _webCrawler.ReadStatsForMatch(match);
         return fm;
@@ -92,7 +92,7 @@ public class FootballRepository : IFootballRepository
         return deleted;
     ***REMOVED***
 
-    public async Task<FootballTeam?> UpdateAwayTeam(FootballMatch m, FootballTeam t)
+    public FootballTeam? UpdateAwayTeam(FootballMatch m, FootballTeam t)
     {
         t.MatchesWon += m.ATGoals > m.HTGoals ? 1 : 0;
         t.MatchesLost += m.ATGoals < m.HTGoals ? 1 : 0;
@@ -111,7 +111,7 @@ public class FootballRepository : IFootballRepository
         // Read from main page with results
         // For each gameweek
         var matchDays = _webCrawler.GetMatchDays();
-        List<Match> matches = new List<Match>();
+        List<Match> matches = new();
         foreach (var matchday in matchDays)
         {
             var lines = _webCrawler.GetMatchDayResults(matchday);
