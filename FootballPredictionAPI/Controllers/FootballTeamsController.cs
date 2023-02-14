@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using FootballPredictionAPI.Models;
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Interfaces;
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.CodeAnalysis.Differencing;
 
 namespace FootballPredictionAPI.Controllers
@@ -26,35 +27,105 @@ namespace FootballPredictionAPI.Controllers
         {
             List<FootballMatch> fmatches = new List<FootballMatch>();
             var newMatches = await _repository.GetNewMatches();
+            if (newMatches.Count() == 0)
+            {
+                return Ok("No matches to update");
+            ***REMOVED***
             foreach (var match in newMatches)
             {
                 // Read stats 
                 // Save to FootballMatch object
+                // TO DO: Update time
                 var footballMatchesWithStats = await _repository.ReadStatsForMatch(match);
                 fmatches.Add(footballMatchesWithStats);
-                
                 // Add to db
-                await _repository.AddFootballMatchWithStats(footballMatchesWithStats);
-
-                // Update teams
-                foreach (var m in fmatches)
+                // Check if match with that date and teams already exists
+                FootballMatch? resultAddMatch = await _repository.AddFootballMatchWithStats(footballMatchesWithStats);
+                if (resultAddMatch == null)
                 {
-                    FootballTeam hft = await _repository.UpdateHomeFootballTeam(m);
-                    FootballTeam aft = await _repository.UpdateAwayFootballTeam(m);
+                    return BadRequest("Football Match with stat not added!");
                 ***REMOVED***
-                
-                // Remove from queue
-                await _repository.DeleteFromQueue(fmatches);
             ***REMOVED***
+            
+            // Update teams
+            foreach (var m in fmatches)
+            {
+                var homeTeam = await _repository.GetTeamByName(m.HomeTeam!);
+                var awayTeam = await _repository.GetTeamByName(m.AwayTeam!);
+                if (homeTeam != null)
+                {
+                    FootballTeam? hft = await _repository.UpdateHomeTeam(m, homeTeam);
+                    var responseUpdateht = await _repository.UpdateFootballTeam(hft.Id, hft);
+                    if (responseUpdateht == null)
+                    {
+                        return BadRequest("Problems while updating home team!");
+                    ***REMOVED***
+                ***REMOVED***
+                else
+                {
+                    FootballTeam hft = new FootballTeam
+                    {
+                        Name = m.HomeTeam,
+                        MatchesWon = m.HTGoals > m.ATGoals ? 1 : 0,
+                        MatchesLost = m.HTGoals < m.ATGoals ? 1 : 0,
+                        MatchesDraw = m.HTGoals == m.ATGoals ? 1 : 0,
+                        GoalsScored = (int)m.HTGoals,
+                        GoalsLost = (int)m.ATGoals,
+                        MatchesPlayed = 1
+                    ***REMOVED***;
+                    hft.Points = _repository.CalculatePoints(hft);
+                    hft.GoalDifference = hft.GoalsScored - hft.GoalsLost;
+                    var responseAddTeam = await _repository.AddTeam(hft);
+                    if (responseAddTeam == null)
+                    {
+                        return BadRequest("Problems while adding home team!");
+                    ***REMOVED***
+                ***REMOVED***
 
-            return null;
+                if (awayTeam != null)
+                {
+                    FootballTeam? aft = await _repository.UpdateAwayTeam(m, awayTeam);
+                    var responseUpdateAt = await _repository.UpdateFootballTeam(aft.Id, aft);
+                    if (responseUpdateAt == null)
+                    {
+                        return BadRequest("Problems while updating Away Team!");
+                    ***REMOVED***
+                ***REMOVED***
+                else
+                {
+                    FootballTeam aft = new FootballTeam
+                    {
+                        Name = m.AwayTeam,
+                        MatchesWon = m.ATGoals > m.HTGoals ? 1 : 0,
+                        MatchesLost = m.ATGoals < m.HTGoals ? 1 : 0,
+                        MatchesDraw = m.ATGoals == m.HTGoals ? 1 : 0,
+                        GoalsScored = (int)m.ATGoals,
+                        GoalsLost = (int)m.HTGoals,
+                        MatchesPlayed = 1
+                    ***REMOVED***;
+                    aft.Points = _repository.CalculatePoints(aft);
+                    aft.GoalDifference = aft.GoalsScored - aft.GoalsLost;
+                    var responseAddTeam = await _repository.AddTeam(aft);
+                    if (responseAddTeam == null)
+                    {
+                        return BadRequest("Problems while adding away team!");
+                    ***REMOVED***
+                ***REMOVED***
+            ***REMOVED***
+                
+            // Remove from queue
+            var response = await _repository.DeleteFromQueue(newMatches);
+            if (response.Count() == newMatches.Count())
+            {
+                return Ok(response);
+            ***REMOVED***
+            return BadRequest("Something went wrong while deleting!" + response);
         ***REMOVED***
         
         [Obsolete("One time job & has been run already")]
         [HttpPost("populatematchestocome")]
         public async Task PopulateMatchesToCome()
         {
-            Console.WriteLine("Controller populate");
             await _repository.PopulateMatchesToCome();
         ***REMOVED***
 
@@ -72,22 +143,7 @@ namespace FootballPredictionAPI.Controllers
             
             return await _repository.PredictResult(team1, team2);
         ***REMOVED***
-
-        [Obsolete("This will no longer be needed after a CosmosDB integration")]
-        [HttpPost("seed")]
-        public async Task<ActionResult<IEnumerable<FootballTeamDTO>>> SeedFootballTeam()
-        {
-            //Added a failsafe to this before confirmed removal.
-            var teamExists = true;
-            if (!teamExists)
-            {
-                return Ok(await _repository.Seed());
-            ***REMOVED***
-
-            return Ok("Seed already in!");
-        ***REMOVED***
-
-
+        
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FootballTeamDTO>>> GetTeams()
         {

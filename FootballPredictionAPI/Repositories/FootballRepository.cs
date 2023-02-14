@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using CsvHelper;
 using HtmlAgilityPack;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Graph;
 using File = System.IO.File;
@@ -38,12 +39,8 @@ public class FootballRepository : IFootballRepository
 
     public async Task<IEnumerable<Match>> GetNewMatches()
     {
-        // Connect to queue db
-        // Read matches played before DateTime.Now
-        // If many, select n first (played longest ago)
-        
         CreateQueueConnection(out _, out Container container);
-        QueryDefinition query = new QueryDefinition("select top 10 * from c where c.Date < '2023-02-31' order by c.Date");
+        QueryDefinition query = new QueryDefinition("select top 5 * from c where c.Date < GetCurrentDateTime() order by c.Date");
         var dbContainerResponse = container.GetItemQueryIterator<Match>(query);
         List<Match> URIs = new List<Match>();
         while (dbContainerResponse.HasMoreResults)
@@ -51,7 +48,6 @@ public class FootballRepository : IFootballRepository
             FeedResponse<Match> response = await dbContainerResponse.ReadNextAsync();
             foreach (var match in response)
             {
-                Console.WriteLine(match);
                 URIs.Add(match);
             ***REMOVED***
         ***REMOVED***
@@ -60,11 +56,6 @@ public class FootballRepository : IFootballRepository
 
     public async Task<FootballMatch> ReadStatsForMatch(Match match)
     {
-        // Get site from match.StatsUrl
-        HtmlWeb web = new HtmlWeb();
-        HtmlDocument doc = web.Load(match.StatsUrl);
-        // Get stats
-        // Save in a FootballMatch object
         FootballMatch fm = _webCrawler.ReadStatsForMatch(match);
         return fm;
     ***REMOVED***
@@ -79,57 +70,51 @@ public class FootballRepository : IFootballRepository
 
     public async Task<IEnumerable<Match>> DeleteFromQueue(IEnumerable<Match> matchesToDelete)
     {
-        CreateContainerMatches(out _, out Container container);
-        List<FootballMatch> deleted = new List<FootballMatch>();
+        CreateQueueConnection(out _, out Container container);
+        List<Match> deleted = new List<Match>();
         foreach (var m in matchesToDelete)
         {
-            IOrderedQueryable<FootballMatch> queryable = container.GetItemLinqQueryable<FootballMatch>();
+            IOrderedQueryable<Match> queryable = container.GetItemLinqQueryable<Match>();
             var matches = queryable
                 .Where(fm => fm.Id!.Equals(m.Id));
-            using FeedIterator<FootballMatch> linqFeed = matches.ToFeedIterator();
+            using FeedIterator<Match> linqFeed = matches.ToFeedIterator();
             while (linqFeed.HasMoreResults)
             {
-                FeedResponse<FootballMatch> response = await linqFeed.ReadNextAsync();
+                FeedResponse<Match> response = await linqFeed.ReadNextAsync();
+                
                 var match = response.FirstOrDefault();
-                await container.DeleteItemAsync<FootballMatch>(match!.Id, new PartitionKey(match!.Id));
-                deleted.Add(match);
+                var resp = await container.DeleteItemAsync<Match>(match!.Id, new PartitionKey(match!.Id));
+                if (resp != null)
+                {
+                    deleted.Add(match);
+                ***REMOVED***
             ***REMOVED***
         ***REMOVED***
-        return deleted;  
+        return deleted;
     ***REMOVED***
 
-    public Task<FootballTeam> UpdateHomeFootballTeam(FootballMatch footballMatch)
+    public async Task<FootballTeam?> UpdateAwayTeam(FootballMatch m, FootballTeam t)
     {
-        throw new NotImplementedException();
-    ***REMOVED***
-
-    public Task<FootballTeam> UpdateAwayFootballTeam(FootballMatch footballMatch)
-    {
-        throw new NotImplementedException();
-    ***REMOVED***
-
-    public async Task<IEnumerable<FootballMatch>> AddNewMatch(Match match)
-    {
-        return null;
-    ***REMOVED***
-
-    public async Task<FootballTeam> UpdateTeam()
-    {
-        return null;
+        t.MatchesWon += m.ATGoals > m.HTGoals ? 1 : 0;
+        t.MatchesLost += m.ATGoals < m.HTGoals ? 1 : 0;
+        t.MatchesDraw += m.ATGoals == m.HTGoals ? 1 : 0;
+        t.GoalsScored += (int)m.ATGoals;
+        t.GoalsLost += (int)m.HTGoals;
+        t.MatchesPlayed += 1;
+        t.Points = CalculatePoints(t);
+        t.GoalDifference = t.GoalsScored - t.GoalsLost;
+        return t;
     ***REMOVED***
 
     [Obsolete("One time job & has been run already")]
     public async Task PopulateMatchesToCome()
     {
-        Console.WriteLine("POPULATE MATCHESTOCOME _repository");
         // Read from main page with results
         // For each gameweek
         var matchDays = _webCrawler.GetMatchDays();
-        Console.WriteLine(matchDays.Count);
         List<Match> matches = new List<Match>();
         foreach (var matchday in matchDays)
         {
-            Console.WriteLine(matchday);
             var lines = _webCrawler.GetMatchDayResults(matchday);
             var linesToMatches = new List<Match>();
             foreach (var data in lines)
@@ -152,7 +137,6 @@ public class FootballRepository : IFootballRepository
         {
             match.Id = Guid.NewGuid().ToString();
             var createItem = await container.CreateItemAsync(match);
-            Console.WriteLine(createItem);
         ***REMOVED***
         
     ***REMOVED***
@@ -201,6 +185,42 @@ public class FootballRepository : IFootballRepository
         ***REMOVED***
         return null;
     ***REMOVED***
+    
+    public async Task<FootballTeam?> GetTeamByName(string name)
+    {
+        CreateDatabaseConnection(out _, out Container container);
+        IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
+        var matches = queryable
+            .Where(fb => fb.Name!.Equals(name));
+        using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
+        while (linqFeed.HasMoreResults)
+        {
+            FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
+            return response.FirstOrDefault();
+        ***REMOVED***
+        return null;
+    ***REMOVED***
+
+    public async Task<FootballTeam?> AddTeam(FootballTeam ft)
+    {
+        CreateDatabaseConnection(out _, out Container container);
+        ft.Id = Guid.NewGuid().ToString();
+        var createTeam = await container.CreateItemAsync(ft);
+        return createTeam;
+    ***REMOVED***
+
+    public async Task<FootballTeam?> UpdateHomeTeam(FootballMatch m, FootballTeam t)
+    {
+        t.MatchesWon += m.HTGoals > m.ATGoals ? 1 : 0;
+        t.MatchesLost += m.HTGoals < m.ATGoals ? 1 : 0;
+        t.MatchesDraw += m.HTGoals == m.ATGoals ? 1 : 0;
+        t.GoalsScored += (int)m.HTGoals;
+        t.GoalsLost += (int)m.ATGoals;
+        t.MatchesPlayed += 1;
+        t.Points = CalculatePoints(t);
+        t.GoalDifference = t.GoalsScored - t.GoalsLost;
+        return t;
+    ***REMOVED***
 
     public async Task<FootballTeam?> UpdateFootballTeam(string id, FootballTeam footballTeam)
     {
@@ -215,41 +235,24 @@ public class FootballRepository : IFootballRepository
             var team = response.FirstOrDefault();
             team = new FootballTeam
             {
-                Id = id,
+                Id = footballTeam.Id,
                 Name = footballTeam.Name,
                 MatchesWon = footballTeam.MatchesWon,
                 MatchesLost = footballTeam.MatchesLost,
                 MatchesDraw = footballTeam.MatchesDraw,
                 Description = footballTeam.Description,
+                GoalsScored = footballTeam.GoalsScored,
+                GoalsLost = footballTeam.GoalsLost,
+                MatchesPlayed = footballTeam.MatchesPlayed
             ***REMOVED***;
+            team.Points = CalculatePoints(team);
+            team.GoalDifference = team.GoalsScored - team.GoalsLost;
             await container.UpsertItemAsync(team);
             return team;
         ***REMOVED***
         return null;
     ***REMOVED***
     
-    [Obsolete("Not needed after teams are initialized")]
-    public async Task<object> UpdateAllTeams()
-    {
-        // Update goalDifference when all teams are added / updated based on matches
-        
-        CreateDatabaseConnection(out _, out Container container);
-        IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
-
-        using FeedIterator<FootballTeam> linqFeed = queryable.ToFeedIterator();
-        while (linqFeed.HasMoreResults)
-        {
-            FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
-            foreach (var team in response)
-            {
-                team.GoalDifference = team.GoalsScored - team.GoalsLost;
-                await container.UpsertItemAsync(team);
-            ***REMOVED***
-          
-        ***REMOVED***
-        return null!;
-    ***REMOVED***
-
     public async Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeam)
     {
         CreateDatabaseConnection(out _, out Container container);
@@ -314,130 +317,7 @@ public class FootballRepository : IFootballRepository
         ***REMOVED***
         return null;
     ***REMOVED***
-
-    [Obsolete("This will no longer be needed after a CosmosDB integration")]
-    public async Task<IEnumerable<FootballTeamDTO>> Seed()
-    {
-        string path = "Data/laliga21-22.csv";
-
-        string[] lines = await File.ReadAllLinesAsync(path);
-        var teamsData = lines.Skip(1);
-        List<FootballTeam> teams = new();
-        foreach (string line in teamsData)
-        {
-            string[] columns = line.Split(",");
-            string ftName = columns[1];
-            int wins = int.Parse(columns[3]);
-            int lost = int.Parse(columns[5]);
-            int draw = int.Parse(columns[4]);
-            FootballTeam team = new()
-            {
-                Name = ftName,
-                MatchesWon = wins,
-                MatchesLost = lost,
-                MatchesDraw = draw,
-                Description = $"Team located in Spain: {ftName***REMOVED***"
-            ***REMOVED***;
-            team.Points = CalculatePoints(team);
-            teams.Add(team);
-            await _context.Teams.AddAsync(team);
-        ***REMOVED***
-
-        await _context.SaveChangesAsync();
-
-        return _mapper.Map<IEnumerable<FootballTeamDTO>>(teams);
-
-    ***REMOVED***
     
-    /*[Obsolete("This will no longer be needed after CosmosDB population")]
-    public void PopulateTeams()
-    {
-        // TO DO: Check if container exists, create if not
-        
-        List<FootballTeam> teams = new List<FootballTeam>();
-        IEnumerable<FootballMatch> records;
-        using (var reader = new StreamReader("matches_teams_current.csv"))
-        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-        {
-            records = csv.GetRecords<FootballMatch>().ToList();
-        ***REMOVED***
-
-        foreach (var record in records)
-        {
-            string HT = record.HomeTeam!;
-            string AT = record.AwayTeam!;
-            Console.WriteLine(HT + ", " + AT);
-            FootballTeam ft = teams.FirstOrDefault(t => t.Name == HT)!;
-            if (ft == null)
-            {
-                FootballTeam ftN = new FootballTeam
-                {
-                    Name = HT,
-                    Points = 0,
-                    MatchesWon = record.HTGoals > record.ATGoals ? 1 : 0,
-                    MatchesLost = record.HTGoals < record.ATGoals ? 1 : 0,
-                    MatchesDraw = record.HTGoals == record.ATGoals ? 1 : 0,
-                    Description = "",
-                    GoalsScored = (int)(record.HTGoals),
-                    GoalsLost = (int)(record.ATGoals),
-                    GoalDifference = 0,
-                    MatchesPlayed = 1
-                ***REMOVED***;
-                ftN.Points = CalculatePoints(ftN);
-                ftN.GoalDifference = ftN.GoalsScored - ftN.GoalsLost;
-                teams.Add(ftN);
-            ***REMOVED***
-            else
-            {
-                ft.GoalsScored += (int)record.HTGoals;
-                ft.GoalsLost += (int)record.ATGoals;
-                ft.MatchesWon += record.HTGoals > record.ATGoals ? 1 : 0;
-                ft.MatchesLost += record.HTGoals < record.ATGoals ? 1 : 0;
-                ft.MatchesDraw += record.HTGoals == record.ATGoals ? 1 : 0;
-                ft.Points = CalculatePoints(ft);
-            ***REMOVED***
-
-            
-            FootballTeam aft = teams.FirstOrDefault(t => t.Name == AT)!;
-            if (aft == null)
-            {
-                FootballTeam ftN = new FootballTeam
-                {
-                    Name = AT,
-                    Points = 0,
-                    MatchesWon = record.HTResult == "L" ? 1 : 0,
-                    MatchesLost = record.HTResult == "L" ? 1 : 0,
-                    MatchesDraw = record.HTResult == "W" ? 1 : 0,
-                    Description = "",
-                    GoalsScored = int.Parse(record.Score.Split(":")[1]),
-                    GoalsLost = int.Parse(record.Score.Split(":")[0]),
-                    GoalDifference = 0,
-                    MatchesPlayed = 1
-                ***REMOVED***;
-                ftN.Points = CalculatePoints(ftN);
-                ftN.GoalDifference = ftN.GoalsScored - ftN.GoalsLost;
-                teams.Add(ftN);
-                Console.WriteLine("Away team " + ftN.Points);
-            ***REMOVED***
-            else
-            {
-                Console.WriteLine("AT before " + aft.Points);
-                aft.GoalsScored += int.Parse(record.Score.Split(":")[1]);
-                aft.GoalsLost += int.Parse(record.Score.Split(":")[0]);
-                aft.MatchesWon += record.HTResult == "L" ? 1 : 0;
-                aft.MatchesLost += record.HTResult == "W" ? 1 : 0;
-                aft.MatchesDraw += record.HTResult == "D" ? 1 : 0;
-                aft.Points = CalculatePoints(aft);
-                Console.WriteLine("AT after " + aft.Points);
-            ***REMOVED***
-        ***REMOVED***
-        foreach (var team in teams)
-        {
-            var postTeam = AddFootballTeam(team);
-        ***REMOVED***
-        var updateTeam = UpdateAllTeams();
-    ***REMOVED****/
-
     public void PopulateTeams()
     {
         // Nothing
@@ -459,7 +339,6 @@ public class FootballRepository : IFootballRepository
 
         records = records.Skip(1);
 
-        Console.WriteLine(records.Count());
         foreach (var record in records)
         {
             
@@ -528,32 +407,14 @@ public class FootballRepository : IFootballRepository
             {
                 string result = await response.Content.ReadAsStringAsync();
                 string predictions = String.Format("Result: {0***REMOVED***", result);
-                Console.WriteLine(predictions);
                 return predictions;
             ***REMOVED***
             else
             {
-                
-                Console.WriteLine(string.Format("The request failed with status code: {0***REMOVED***", response.StatusCode));
-
-                // Print the headers - they include the requert ID and the timestamp,
-                // which are useful for debugging the failure
-                Console.WriteLine(response.Headers.ToString());
-
                 string responseContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(responseContent);
                 return string.Format("The request failed with status code: {0***REMOVED***", response.StatusCode);
             ***REMOVED***
         ***REMOVED***
-    ***REMOVED***
-
-    public async Task<FootballTeam?> AddFootballTeam(FootballTeam footballTeam)
-    {
-        CreateDatabaseConnection(out _, out Container container);
-        //var mappedTeam = _mapper.Map<FootballTeam>(footballTeam);
-        footballTeam.Id = Guid.NewGuid().ToString();
-        var createTeam = await container.CreateItemAsync(footballTeam);
-        return createTeam;
     ***REMOVED***
 
     public int CalculatePoints(FootballTeam footballTeam)
