@@ -1,6 +1,8 @@
 name: Build and deploy application to Web App FootballPredictionAPI
 on:
   push:
+    branches:
+    - main
   pull_request:
     branches:
     - main
