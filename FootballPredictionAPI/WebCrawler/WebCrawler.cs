@@ -109,12 +109,12 @@ public class WebCrawler
         HtmlDocument htmlDoc = web.Load(match.StatsUrl);
         var stats = htmlDoc.DocumentNode.SelectNodes("//div[@class='styled__TabContent-sc-165n2lv-0 bdnghW']")
             .LastOrDefault();
-        var table = stats.SelectNodes(".//div[@class='styled__CellStyled-vl6wna-0 gpAwUe']").FirstOrDefault();
+        var table = stats!.SelectNodes(".//div[@class='styled__CellStyled-vl6wna-0 gpAwUe']").FirstOrDefault();
         var dict = new Dictionary<string, object>();
-        var body = table.SelectNodes("div").Last();
+        var body = table!.SelectNodes("div").Last();
         foreach (HtmlNode row in body.SelectNodes("div")) {
             
-            var feat = row.SelectNodes("p").FirstOrDefault().InnerText;
+            var feat = row.SelectNodes("p").FirstOrDefault()!.InnerText;
             foreach (HtmlNode cell in row.SelectNodes("div"))
             {
                 if (feat != "Penalties")
