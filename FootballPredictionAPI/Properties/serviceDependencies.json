@@ -14,13 +14,13 @@
       "connectionId": "AzureAD:ClientSecret",
       "dynamicId": null
     },
-    "apis1": {
-      "type": "apis"
-    },
     "secrets2": {
       "type": "secrets",
       "connectionId": "VaultUri",
       "dynamicId": null
+    },
+    "apis1": {
+      "type": "apis"
     }
   }
 }
