@@ -36,7 +36,7 @@ namespace FootballPredictionAPI.Controllers
                 // Read stats 
                 // Save to FootballMatch object
                 // TO DO: Update time
-                var footballMatchesWithStats = await _repository.ReadStatsForMatch(match);
+                var footballMatchesWithStats = _repository.ReadStatsForMatch(match);
                 fmatches.Add(footballMatchesWithStats);
                 // Add to db
                 // Check if match with that date and teams already exists
@@ -54,7 +54,7 @@ namespace FootballPredictionAPI.Controllers
                 var awayTeam = await _repository.GetTeamByName(m.AwayTeam!);
                 if (homeTeam != null)
                 {
-                    FootballTeam? hft = await _repository.UpdateHomeTeam(m, homeTeam);
+                    FootballTeam? hft = _repository.UpdateHomeTeam(m, homeTeam);
                     var responseUpdateht = await _repository.UpdateFootballTeam(hft!.Id!, hft);
                     if (responseUpdateht == null)
                     {
@@ -84,7 +84,7 @@ namespace FootballPredictionAPI.Controllers
 
                 if (awayTeam != null)
                 {
-                    FootballTeam? aft = await _repository.UpdateAwayTeam(m, awayTeam);
+                    FootballTeam? aft = _repository.UpdateAwayTeam(m, awayTeam);
                     var responseUpdateAt = await _repository.UpdateFootballTeam(aft.Id!, aft);
                     if (responseUpdateAt == null)
                     {

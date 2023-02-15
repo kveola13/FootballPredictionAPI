@@ -59,7 +59,7 @@ public class FootballRepository : IFootballRepository
         return fm;
     ***REMOVED***
 
-    public async Task<FootballMatch> AddFootballMatchWithStats(FootballMatch footballMatchesWithStats)
+    public async Task<FootballMatch?> AddFootballMatchWithStats(FootballMatch footballMatchesWithStats)
     {
         CreateContainerMatches(out _, out Container container);
         footballMatchesWithStats.Id = Guid.NewGuid().ToString();
