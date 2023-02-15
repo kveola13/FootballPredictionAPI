@@ -13,8 +13,7 @@ public interface IFootballRepository
     Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeamDTO);
     Task<FootballTeam?> DeleteFootballTeamById(string id);
     Task<FootballTeam?> DeleteFootballTeamByName(string name);
-    [Obsolete("This will no longer be needed after a CosmosDB integration")]
-    Task<IEnumerable<FootballTeamDTO>> Seed();
+
     int CalculatePoints(FootballTeam footballTeam);
     [Obsolete("Not needed after update")]
     bool FootballTeamTableExists();
@@ -22,4 +21,13 @@ public interface IFootballRepository
     void PopulateTeams();
     Task PopulateMatches();
     Task<ActionResult<string>> PredictResult(string team1, string team2);
+    Task<IEnumerable<Match>> GetNewMatches();
+    Task PopulateMatchesToCome();
+    FootballMatch ReadStatsForMatch(Match match);
+    Task<FootballMatch?> AddFootballMatchWithStats(FootballMatch footballMatchesWithStats);
+    Task<IEnumerable<Match>> DeleteFromQueue(IEnumerable<Match> matchesToDelete);
+    FootballTeam? UpdateHomeTeam(FootballMatch footballMatch, FootballTeam footballTeam);
+    FootballTeam? UpdateAwayTeam(FootballMatch footballMatch, FootballTeam footballTeam);
+    Task<FootballTeam?> GetTeamByName(string teamName);
+    Task<FootballTeam?> AddTeam(FootballTeam ft);
 }

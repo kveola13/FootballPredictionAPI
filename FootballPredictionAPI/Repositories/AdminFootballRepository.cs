@@ -19,7 +19,6 @@ namespace FootballPredictionAPI.Repositories
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly string containerName = "teams";
-        private readonly string macthesContainer = "matches";
 
         public AdminFootballRepository(FootballTeamContext context, IMapper mapper, IConfiguration configuration)
         {
