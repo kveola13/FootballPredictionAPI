@@ -85,7 +85,7 @@ namespace FootballPredictionAPI.Controllers
                 if (awayTeam != null)
                 {
                     FootballTeam? aft = _repository.UpdateAwayTeam(m, awayTeam);
-                    var responseUpdateAt = await _repository.UpdateFootballTeam(aft.Id!, aft);
+                    var responseUpdateAt = await _repository.UpdateFootballTeam(aft!.Id!, aft);
                     if (responseUpdateAt == null)
                     {
                         return BadRequest("Problems while updating Away Team!");
