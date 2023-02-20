@@ -4,31 +4,37 @@ using Newtonsoft.Json;
 
 namespace FootballPredictionAPI.Models;
 
-public class FootballMatch
+public class FootballMatch : Match
 {
-    [JsonProperty(PropertyName = "id")]
-    public string? Id { get; set; ***REMOVED***
-    public int Week { get; set; ***REMOVED***
-    public DateTime Date { get; set; ***REMOVED***
-    public string? HomeTeam { get; set; ***REMOVED***
-    public string? Score { get; set; ***REMOVED***
-    public string? AwayTeam { get; set; ***REMOVED***
-    public int Attendence { get; set; ***REMOVED***
-    public int HTShotsOnTarget { get; set; ***REMOVED***
-    public int ATShotsOnTarget { get; set; ***REMOVED***
-    
-    public int HTShotsTotal { get; set; ***REMOVED***
-    
-    public int ATShotsTotal { get; set; ***REMOVED***
-    
-    public int HTPossesion { get; set; ***REMOVED***
-    
-    public int ATPossesion { get; set; ***REMOVED***
-    
-    public int HTPassesTotal { get; set; ***REMOVED***
-    public int ATPassesTotal { get; set; ***REMOVED***
-    public int HTPassingAccuracy { get; set; ***REMOVED***
-    public int ATPassingAccuracy { get; set; ***REMOVED***
-    public string? HTResult { get; set; ***REMOVED***
+    public double HTPossession { get; set; ***REMOVED***
+    public double HTTotalshots { get; set; ***REMOVED***
+    public double HTAccuaracy { get; set; ***REMOVED***
+    public double HTFouls { get; set; ***REMOVED***
+    public double HTYellowcards { get; set; ***REMOVED***
+    public double HTRedcards { get; set; ***REMOVED***
+    public double HTOffsides { get; set; ***REMOVED***
+    public double HTCornerstaken { get; set; ***REMOVED***
+    public double HTGoals { get; set; ***REMOVED***
 
+    public double ATPossession { get; set; ***REMOVED***
+    public double ATTotalshots { get; set; ***REMOVED***
+    public double ATAccuaracy { get; set; ***REMOVED***
+    public double ATFouls { get; set; ***REMOVED***
+    public double ATYellowcards { get; set; ***REMOVED***
+    public double ATRedcards { get; set; ***REMOVED***
+    public double ATOffsides { get; set; ***REMOVED***
+    public double ATCornerstaken { get; set; ***REMOVED***
+    public double ATGoals { get; set; ***REMOVED***
+
+    public FootballMatch() : base()
+    {
+        
+    ***REMOVED***
+    
+    public override string ToString()
+    {
+        string str = Date.ToString() + " - " + HomeTeam + " " + HTGoals + ":" + ATGoals + " " + AwayTeam 
+                     + "(" + HTPossession + "-" + ATPossession + ", " + HTCornerstaken + "-" + ATCornerstaken + ")";
+        return str;
+    ***REMOVED***
 ***REMOVED***
