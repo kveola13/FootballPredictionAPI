@@ -3,10 +3,12 @@ import { BrowserModule ***REMOVED*** from '@angular/platform-browser';
 
 import { AppRoutingModule ***REMOVED*** from './app-routing.module';
 import { AppComponent ***REMOVED*** from './app.component';
+import { HeaderComponent ***REMOVED*** from './header/header.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    HeaderComponent
   ],
   imports: [
     BrowserModule,
