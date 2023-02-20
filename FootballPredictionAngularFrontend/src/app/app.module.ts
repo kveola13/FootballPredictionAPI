@@ -4,11 +4,13 @@ import { BrowserModule ***REMOVED*** from '@angular/platform-browser';
 import { AppRoutingModule ***REMOVED*** from './app-routing.module';
 import { AppComponent ***REMOVED*** from './app.component';
 import { HeaderComponent ***REMOVED*** from './header/header.component';
+import { FooterComponent ***REMOVED*** from './footer/footer.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    HeaderComponent
+    HeaderComponent,
+    FooterComponent
   ],
   imports: [
     BrowserModule,
