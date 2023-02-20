@@ -14,6 +14,7 @@ using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Graph;
+using NuGet.Protocol;
 using File = System.IO.File;
 
 namespace FootballPredictionAPI.Repositories;
@@ -350,7 +351,72 @@ public class FootballRepository : IFootballRepository
 
     public async Task<ActionResult<string>> PredictResult(string team1, string team2)
     {
-        var handler = new HttpClientHandler()
+        List<MatchTeam> requestData = new();
+        CreateContainerMatches(out _, out Container container);
+        QueryDefinition query = new(@"select * from c where c.HomeTeam = '@team1' or c.AwayTeam = '@team1' and c.Date < GetCurrentDateTime() order by c.Date desc offset 0 limit 5"
+            .Replace("@team1", team1));
+        var dbContainerResponse = container.GetItemQueryIterator<FootballMatch>(query);
+        while (dbContainerResponse.HasMoreResults)
+        {
+            FeedResponse<FootballMatch> response = await dbContainerResponse.ReadNextAsync();
+            foreach (var match in response)
+            {
+                var nm = new MatchTeam
+                {
+                    Date = match.Date,
+                    Team = team1,
+                    Opponent = match.HomeTeam == team1 ? match.AwayTeam : match.HomeTeam,
+                    Possession = match.HomeTeam == team1 ? match.HTPossession : match.ATPossession,
+                    Totalshots = match.HomeTeam == team1 ? match.HTTotalshots : match.ATTotalshots,
+                    Accuaracy = match.HomeTeam == team1 ? match.HTAccuaracy : match.ATAccuaracy,
+                    Fouls = match.HomeTeam == team1 ? match.HTFouls : match.ATFouls,
+                    Yellowcards = match.HomeTeam == team1 ? match.HTYellowcards : match.ATYellowcards,
+                    Redcards = match.HomeTeam == team1 ? match.HTRedcards : match.ATRedcards,
+                    Offsides = match.HomeTeam == team1 ? match.HTOffsides : match.ATOffsides,
+                    Cornerstaken = match.HomeTeam == team1 ? match.HTCornerstaken : match.ATCornerstaken,
+                    Goals = match.HomeTeam == team1 ? match.HTGoals : match.ATGoals,
+                    OpponentGoals = match.HomeTeam == team1 ? match.ATGoals : match.HTGoals
+                };
+                requestData.Add(nm);
+            }
+        }
+        query = new(@"select * from c where c.HomeTeam = '@team2' or c.AwayTeam = '@team2' and c.Date < GetCurrentDateTime() order by c.Date desc offset 0 limit 5"
+            .Replace("@team2", team2));
+        dbContainerResponse = container.GetItemQueryIterator<FootballMatch>(query);
+        while (dbContainerResponse.HasMoreResults)
+        {
+            FeedResponse<FootballMatch> response = await dbContainerResponse.ReadNextAsync();
+            foreach (var match in response)
+            {
+                var nm = new MatchTeam
+                {
+                    Date = match.Date,
+                    Team = team2,
+                    Opponent = match.HomeTeam == team2 ? match.AwayTeam : match.HomeTeam,
+                    Possession = match.HomeTeam == team2 ? match.HTPossession : match.ATPossession,
+                    Totalshots = match.HomeTeam == team2 ? match.HTTotalshots : match.ATTotalshots,
+                    Accuaracy = match.HomeTeam == team2 ? match.HTAccuaracy : match.ATAccuaracy,
+                    Fouls = match.HomeTeam == team2 ? match.HTFouls : match.ATFouls,
+                    Yellowcards = match.HomeTeam == team2 ? match.HTYellowcards : match.ATYellowcards,
+                    Redcards = match.HomeTeam == team2 ? match.HTRedcards : match.ATRedcards,
+                    Offsides = match.HomeTeam == team2 ? match.HTOffsides : match.ATOffsides,
+                    Cornerstaken = match.HomeTeam == team2 ? match.HTCornerstaken : match.ATCornerstaken,
+                    Goals = match.HomeTeam == team2 ? match.HTGoals : match.ATGoals,
+                    OpponentGoals = match.HomeTeam == team2 ? match.ATGoals : match.HTGoals
+                };
+                requestData.Add(nm);
+            }
+        }
+
+        foreach (var m in requestData)
+        {
+            Console.WriteLine(m);
+        }
+
+        var request = requestData.ToJson();
+        Console.WriteLine(request);
+        
+        /*var handler = new HttpClientHandler()
         {
             ClientCertificateOptions = ClientCertificateOption.Manual,
             ServerCertificateCustomValidationCallback =
@@ -411,7 +477,8 @@ public class FootballRepository : IFootballRepository
         {
             string responseContent = await response.Content.ReadAsStringAsync();
             return string.Format("The request failed with status code: {0}", response.StatusCode);
-        }
+        }*/
+        return null;
     }
 
     public int CalculatePoints(FootballTeam footballTeam)
