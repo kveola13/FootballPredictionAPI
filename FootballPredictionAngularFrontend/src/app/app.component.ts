@@ -7,4 +7,5 @@ import { Component ***REMOVED*** from '@angular/core';
 ***REMOVED***)
 export class AppComponent {
   title = 'FootballPredictionAngularFrontend';
+  newTitle= "Football Prediction"
 ***REMOVED***
