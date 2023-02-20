@@ -6,5 +6,8 @@ import { Component } from '@angular/core';
   styleUrls: ['./index.component.css']
 })
 export class IndexComponent {
-
+  items= [{
+    name: "Hello",
+    title: "Test"
+  }]
 }
