@@ -416,7 +416,7 @@ public class FootballRepository : IFootballRepository
         var request = requestData.ToJson();
         Console.WriteLine(request);
         
-        /*var handler = new HttpClientHandler()
+        var handler = new HttpClientHandler()
         {
             ClientCertificateOptions = ClientCertificateOption.Manual,
             ServerCertificateCustomValidationCallback =
@@ -430,15 +430,10 @@ public class FootballRepository : IFootballRepository
         // https://docs.microsoft.com/azure/machine-learning/how-to-deploy-advanced-entry-script
         var requestBody = @"{
                   ""Inputs"": {
-                    ""input1"": [
-                      {
-                        ""HomeTeam"": ""Sevilla"",
-                        ""AwayTeam"": ""Barcelona""
-                      ***REMOVED***
-                    ]
+                    ""input1"": @input
                   ***REMOVED***,
                   ""GlobalParameters"": {***REMOVED***
-                ***REMOVED***";
+                ***REMOVED***".Replace("@input", request);
 
         // Replace this with the primary/secondary key or AMLToken for the endpoint
         var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUriPred")!);
@@ -465,20 +460,19 @@ public class FootballRepository : IFootballRepository
         //      result = await DoSomeTask()
         // with the following:
         //      result = await DoSomeTask().ConfigureAwait(false)
-        HttpResponseMessage response = await client.PostAsync("", content);
+        HttpResponseMessage responsePrediction = await client.PostAsync("", content);
 
-        if (response.IsSuccessStatusCode)
+        if (responsePrediction.IsSuccessStatusCode)
         {
-            string result = await response.Content.ReadAsStringAsync();
+            string result = await responsePrediction.Content.ReadAsStringAsync();
             string predictions = String.Format("Result: {0***REMOVED***", result);
             return predictions;
         ***REMOVED***
         else
         {
-            string responseContent = await response.Content.ReadAsStringAsync();
-            return string.Format("The request failed with status code: {0***REMOVED***", response.StatusCode);
-        ***REMOVED****/
-        return null;
+            string responseContent = await responsePrediction.Content.ReadAsStringAsync();
+            return string.Format("The request failed with status code: {0***REMOVED***", responsePrediction.StatusCode);
+        ***REMOVED***
     ***REMOVED***
 
     public int CalculatePoints(FootballTeam footballTeam)
