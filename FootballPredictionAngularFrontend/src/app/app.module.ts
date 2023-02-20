@@ -8,6 +8,7 @@ import { FooterComponent ***REMOVED*** from './footer/footer.component';
 import { IndexComponent ***REMOVED*** from './index/index.component';
 import { AboutComponent ***REMOVED*** from './about/about.component';
 import { PagenotfoundComponent ***REMOVED*** from './pagenotfound/pagenotfound.component';
+import { HomeComponent ***REMOVED*** from './home/home.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { PagenotfoundComponent ***REMOVED*** from './pagenotfound/pagenotfound.c
     FooterComponent,
     IndexComponent,
     AboutComponent,
-    PagenotfoundComponent
+    PagenotfoundComponent,
+    HomeComponent
   ],
   imports: [
     BrowserModule,
