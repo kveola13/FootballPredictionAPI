@@ -3,8 +3,8 @@ namespace FootballPredictionAPI.Models;
 public class FootballMatchPred
 {
     public int Id { get; set; }
-    public String HomeTeam { get; set; }
-    public String AwayTeam { get; set; }
+    public string? HomeTeam { get; set; }
+    public string? AwayTeam { get; set; }
     public double HTShotsOnTarget { get; set; }
     public double ATShotsOnTarget { get; set; }
     
@@ -20,7 +20,7 @@ public class FootballMatchPred
     public double ATPassesTotal { get; set; }
     public double HTPassingAccuracy { get; set; }
     public double ATPassingAccuracy { get; set; }
-    public string HTResult { get; set; }
+    public string? HTResult { get; set; }
     public int? HTPoints { get; set; }
     public int? HTGoalsScored { get; set; }
     public int? HTGoalsAgainst { get; set; }
