@@ -40,7 +40,7 @@ public class FootballRepository : IFootballRepository
     public async Task<IEnumerable<Match>> GetNewMatches()
     {
         CreateQueueConnection(out _, out Container container);
-        QueryDefinition query = new("select top 5 * from c where c.Date < GetCurrentDateTime() order by c.Date");
+        QueryDefinition query = new("select top 1 * from c where c.Date < GetCurrentDateTime() order by c.Date");
         var dbContainerResponse = container.GetItemQueryIterator<Match>(query);
         List<Match> URIs = new();
         while (dbContainerResponse.HasMoreResults)
@@ -208,7 +208,6 @@ public class FootballRepository : IFootballRepository
         var createTeam = await container.CreateItemAsync(ft);
         return createTeam;
     ***REMOVED***
-
     public FootballTeam? UpdateHomeTeam(FootballMatch m, FootballTeam t)
     {
         t.MatchesWon += m.HTGoals > m.ATGoals ? 1 : 0;
