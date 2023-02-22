@@ -3,6 +3,7 @@ using AutoMapper;
 using FootballPredictionAPI.Models;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore.Cosmos.Storage.Internal;
+using Newtonsoft.Json;
 
 namespace FootballPredictionAPI.WebCrawler;
 
@@ -103,6 +104,8 @@ public class WebCrawler
         return matchDays;
     ***REMOVED***
 
+    
+
     public FootballMatch ReadStatsForMatch(Match match)
     {
         HtmlWeb web = new HtmlWeb();
@@ -111,6 +114,9 @@ public class WebCrawler
             .LastOrDefault();
         var table = stats!.SelectNodes(".//div[@class='styled__CellStyled-vl6wna-0 gpAwUe']").FirstOrDefault();
         var dict = new Dictionary<string, object>();
+        var scores = htmlDoc.DocumentNode.SelectNodes("//p[@class='styled__TextRegularStyled-sc-1raci4c-0 hCqHMu']");
+        dict.Add("HTGoals", scores[0].InnerText);
+        dict.Add("ATGoals", scores[1].InnerText);
         var body = table!.SelectNodes("div").Last();
         foreach (HtmlNode row in body.SelectNodes("div")) {
             
