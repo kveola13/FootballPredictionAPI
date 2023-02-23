@@ -24,7 +24,7 @@ jobs:
       run: cd .. && ls
     
     - name: dir ../
-      run: cd .. && ls
+      run: cd ../../ && ls
     
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version ***REMOVED******REMOVED***
