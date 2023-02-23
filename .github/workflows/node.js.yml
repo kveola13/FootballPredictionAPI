@@ -18,7 +18,10 @@ jobs:
         node-version: [14.x, 16.x, 18.x]
     steps:
     - name: dir ./
-      run: ls
+      run: ls .
+    
+    - name: dir ../
+      run: cd .. && ls
     
     - name: dir ../
       run: cd .. && ls
