@@ -14,6 +14,7 @@ using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Graph;
+using NuGet.Protocol;
 using File = System.IO.File;
 
 namespace FootballPredictionAPI.Repositories;
@@ -39,7 +40,7 @@ public class FootballRepository : IFootballRepository
     public async Task<IEnumerable<Match>> GetNewMatches()
     {
         CreateQueueConnection(out _, out Container container);
-        QueryDefinition query = new("select top 5 * from c where c.Date < GetCurrentDateTime() order by c.Date");
+        QueryDefinition query = new("select top 1 * from c where c.Date < GetCurrentDateTime() order by c.Date");
         var dbContainerResponse = container.GetItemQueryIterator<Match>(query);
         List<Match> URIs = new();
         while (dbContainerResponse.HasMoreResults)
@@ -207,7 +208,6 @@ public class FootballRepository : IFootballRepository
         var createTeam = await container.CreateItemAsync(ft);
         return createTeam;
     ***REMOVED***
-
     public FootballTeam? UpdateHomeTeam(FootballMatch m, FootballTeam t)
     {
         t.MatchesWon += m.HTGoals > m.ATGoals ? 1 : 0;
@@ -350,6 +350,71 @@ public class FootballRepository : IFootballRepository
 
     public async Task<ActionResult<string>> PredictResult(string team1, string team2)
     {
+        List<MatchTeam> requestData = new();
+        CreateContainerMatches(out _, out Container container);
+        QueryDefinition query = new(@"select * from c where c.HomeTeam = '@team1' or c.AwayTeam = '@team1' and c.Date < GetCurrentDateTime() order by c.Date desc offset 0 limit 5"
+            .Replace("@team1", team1));
+        var dbContainerResponse = container.GetItemQueryIterator<FootballMatch>(query);
+        while (dbContainerResponse.HasMoreResults)
+        {
+            FeedResponse<FootballMatch> response = await dbContainerResponse.ReadNextAsync();
+            foreach (var match in response)
+            {
+                var nm = new MatchTeam
+                {
+                    Date = match.Date,
+                    Team = team1,
+                    Opponent = match.HomeTeam == team1 ? match.AwayTeam : match.HomeTeam,
+                    Possession = match.HomeTeam == team1 ? match.HTPossession : match.ATPossession,
+                    Totalshots = match.HomeTeam == team1 ? match.HTTotalshots : match.ATTotalshots,
+                    Accuaracy = match.HomeTeam == team1 ? match.HTAccuaracy : match.ATAccuaracy,
+                    Fouls = match.HomeTeam == team1 ? match.HTFouls : match.ATFouls,
+                    Yellowcards = match.HomeTeam == team1 ? match.HTYellowcards : match.ATYellowcards,
+                    Redcards = match.HomeTeam == team1 ? match.HTRedcards : match.ATRedcards,
+                    Offsides = match.HomeTeam == team1 ? match.HTOffsides : match.ATOffsides,
+                    Cornerstaken = match.HomeTeam == team1 ? match.HTCornerstaken : match.ATCornerstaken,
+                    Goals = match.HomeTeam == team1 ? match.HTGoals : match.ATGoals,
+                    OpponentGoals = match.HomeTeam == team1 ? match.ATGoals : match.HTGoals
+                ***REMOVED***;
+                requestData.Add(nm);
+            ***REMOVED***
+        ***REMOVED***
+        query = new(@"select * from c where c.HomeTeam = '@team2' or c.AwayTeam = '@team2' and c.Date < GetCurrentDateTime() order by c.Date desc offset 0 limit 5"
+            .Replace("@team2", team2));
+        dbContainerResponse = container.GetItemQueryIterator<FootballMatch>(query);
+        while (dbContainerResponse.HasMoreResults)
+        {
+            FeedResponse<FootballMatch> response = await dbContainerResponse.ReadNextAsync();
+            foreach (var match in response)
+            {
+                var nm = new MatchTeam
+                {
+                    Date = match.Date,
+                    Team = team2,
+                    Opponent = match.HomeTeam == team2 ? match.AwayTeam : match.HomeTeam,
+                    Possession = match.HomeTeam == team2 ? match.HTPossession : match.ATPossession,
+                    Totalshots = match.HomeTeam == team2 ? match.HTTotalshots : match.ATTotalshots,
+                    Accuaracy = match.HomeTeam == team2 ? match.HTAccuaracy : match.ATAccuaracy,
+                    Fouls = match.HomeTeam == team2 ? match.HTFouls : match.ATFouls,
+                    Yellowcards = match.HomeTeam == team2 ? match.HTYellowcards : match.ATYellowcards,
+                    Redcards = match.HomeTeam == team2 ? match.HTRedcards : match.ATRedcards,
+                    Offsides = match.HomeTeam == team2 ? match.HTOffsides : match.ATOffsides,
+                    Cornerstaken = match.HomeTeam == team2 ? match.HTCornerstaken : match.ATCornerstaken,
+                    Goals = match.HomeTeam == team2 ? match.HTGoals : match.ATGoals,
+                    OpponentGoals = match.HomeTeam == team2 ? match.ATGoals : match.HTGoals
+                ***REMOVED***;
+                requestData.Add(nm);
+            ***REMOVED***
+        ***REMOVED***
+
+        foreach (var m in requestData)
+        {
+            Console.WriteLine(m);
+        ***REMOVED***
+
+        var request = requestData.ToJson();
+        Console.WriteLine(request);
+        
         var handler = new HttpClientHandler()
         {
             ClientCertificateOptions = ClientCertificateOption.Manual,
@@ -364,15 +429,10 @@ public class FootballRepository : IFootballRepository
         // https://docs.microsoft.com/azure/machine-learning/how-to-deploy-advanced-entry-script
         var requestBody = @"{
                   ""Inputs"": {
-                    ""input1"": [
-                      {
-                        ""HomeTeam"": ""Sevilla"",
-                        ""AwayTeam"": ""Barcelona""
-                      ***REMOVED***
-                    ]
+                    ""input1"": @input
                   ***REMOVED***,
                   ""GlobalParameters"": {***REMOVED***
-                ***REMOVED***";
+                ***REMOVED***".Replace("@input", request);
 
         // Replace this with the primary/secondary key or AMLToken for the endpoint
         var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUriPred")!);
@@ -399,18 +459,18 @@ public class FootballRepository : IFootballRepository
         //      result = await DoSomeTask()
         // with the following:
         //      result = await DoSomeTask().ConfigureAwait(false)
-        HttpResponseMessage response = await client.PostAsync("", content);
+        HttpResponseMessage responsePrediction = await client.PostAsync("", content);
 
-        if (response.IsSuccessStatusCode)
+        if (responsePrediction.IsSuccessStatusCode)
         {
-            string result = await response.Content.ReadAsStringAsync();
+            string result = await responsePrediction.Content.ReadAsStringAsync();
             string predictions = String.Format("Result: {0***REMOVED***", result);
             return predictions;
         ***REMOVED***
         else
         {
-            string responseContent = await response.Content.ReadAsStringAsync();
-            return string.Format("The request failed with status code: {0***REMOVED***", response.StatusCode);
+            string responseContent = await responsePrediction.Content.ReadAsStringAsync();
+            return string.Format("The request failed with status code: {0***REMOVED***", responsePrediction.StatusCode);
         ***REMOVED***
     ***REMOVED***
 
@@ -441,7 +501,7 @@ public class FootballRepository : IFootballRepository
     
     private void CreateQueueConnection(out CosmosClient client, out Container container)
     {
-        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUriPred")!);
+        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUri")!);
         var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
         var accountEndpoint = secretClient.GetSecretAsync("queueURI").Result.Value.Value;
         var accountKey = secretClient.GetSecretAsync("queuePK").Result.Value.Value;
