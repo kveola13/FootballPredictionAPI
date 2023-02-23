@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./footballprediction-react-frontend
+        working-directory: ../footballprediction-react-frontend
     strategy:
       matrix:
         node-version: [14.x, 16.x, 18.x]
