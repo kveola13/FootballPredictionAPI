@@ -1,0 +1,62 @@
+.content {
+    display: flex;
+    margin: 82px auto 32px;
+    padding: 0 16px;
+    max-width: 960px;
+    flex-direction: column;
+    align-items: center;
+  ***REMOVED***
+  .card {
+    border-radius: 4px;
+    height: 40px;
+    width: 200px;
+    margin: 0 8px 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+    line-height: 24px;
+  ***REMOVED***
+  
+  .card-container .card:not(:last-child) {
+    margin-right: 0;
+  ***REMOVED***
+  
+  .card.card-small {
+    height: 16px;
+    width: 168px;
+  ***REMOVED***
+  
+  .card-container .card:not(.highlight-card) {
+    cursor: pointer;
+  ***REMOVED***
+  
+  .card-container .card:not(.highlight-card):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 17px rgba(0, 0, 0, 0.35);
+  ***REMOVED***
+  
+  .card-container .card:not(.highlight-card):hover .material-icons path {
+    fill: rgb(105, 103, 103);
+  ***REMOVED***
+  
+  .card.highlight-card {
+    background-color: #ffd700;
+    color: white;
+    font-weight: 600;
+    border: none;
+    width: auto;
+    min-width: 10%;
+    position: relative;
+  ***REMOVED***
+  
+  .card.card.highlight-card span {
+    margin-left: 1em;
+  ***REMOVED***
+  
+  .title {
+    color: #333;
+  ***REMOVED***
+  
