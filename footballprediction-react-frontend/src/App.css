@@ -1,38 +1,39 @@
-.App {
-  text-align: center;
+:host {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 14px;
+  color: #333;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 ***REMOVED***
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 8px 0;
 ***REMOVED***
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  ***REMOVED***
+p {
+  margin: 0;
 ***REMOVED***
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.spacer {
+  flex: 1;
+***REMOVED***
+
+.title{
+  color: #333;
+***REMOVED***
+
+.content {
   display: flex;
+  margin: 82px auto 32px;
+  padding: 0 16px;
+  max-width: 960px;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-***REMOVED***
-
-.App-link {
-  color: #61dafb;
-***REMOVED***
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  ***REMOVED***
-  to {
-    transform: rotate(360deg);
-  ***REMOVED***
 ***REMOVED***
