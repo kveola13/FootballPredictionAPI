@@ -11,7 +11,7 @@ function Header() {
         <a
           aria-label="Itera on twitter"
           target="_blank"
-          rel="noopener"
+          rel="noopener noreferrer"
           href="https://twitter.com/IteraASA"
           title="Twitter"
         >
@@ -32,7 +32,7 @@ function Header() {
         <a
           aria-label="Itera on YouTube"
           target="_blank"
-          rel="noopener"
+          rel="noopener noreferrer"
           href="https://www.youtube.com/@iteramakeadifference"
           title="YouTube"
         >
