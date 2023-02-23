@@ -3,7 +3,7 @@ import Footer from './Footer';
 
 function App() {
   return (
-    <div className="App">
+    <div className="content">
       <p>App is running</p>
       <Footer />
     </div>
