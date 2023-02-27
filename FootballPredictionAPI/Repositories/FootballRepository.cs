@@ -40,10 +40,8 @@ public class FootballRepository : IFootballRepository
     public async Task<IEnumerable<Match>> GetNewMatches()
     {
         CreateQueueConnection(out _, out Container container);
-
         string today = DateTime.Now.Date.ToString();
-        
-        QueryDefinition query = new($"select top 1 * from c where c.Date < {today***REMOVED*** order by c.Date");
+        QueryDefinition query = new($"select * from c where c.Date < '{today***REMOVED***' order by c.Date offset 0 limit 1");
         var dbContainerResponse = container.GetItemQueryIterator<Match>(query);
         List<Match> URIs = new();
         while (dbContainerResponse.HasMoreResults)
