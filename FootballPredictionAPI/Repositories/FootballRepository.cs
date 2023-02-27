@@ -435,7 +435,7 @@ public class FootballRepository : IFootballRepository
                 }".Replace("@input", request);
 
         // Replace this with the primary/secondary key or AMLToken for the endpoint
-        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUriPred")!);
+        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUri")!);
         var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
         var url = secretClient.GetSecretAsync("prediction-endpoint-url").Result.Value.Value;
         var apiKey = secretClient.GetSecretAsync("prediction-endpoint-api-key").Result.Value.Value;
