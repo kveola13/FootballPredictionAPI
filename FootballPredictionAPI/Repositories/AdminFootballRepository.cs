@@ -47,7 +47,7 @@ namespace FootballPredictionAPI.Repositories
             CreateDatabaseConnection(out _, out Container container);
             IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
             var matches = queryable
-            .Where(fb => fb.Id!.Equals(id));
+            .Where(fb => fb.id!.Equals(id));
             using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
             while (linqFeed.HasMoreResults)
             {
@@ -77,7 +77,7 @@ namespace FootballPredictionAPI.Repositories
             CreateDatabaseConnection(out _, out Container container);
             IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
             var matches = queryable
-            .Where(fb => fb.Id!.Equals(id));
+            .Where(fb => fb.id!.Equals(id));
             using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
             while (linqFeed.HasMoreResults)
             {
@@ -85,7 +85,7 @@ namespace FootballPredictionAPI.Repositories
                 var team = response.FirstOrDefault();
                 team = new FootballTeam
                 {
-                    Id = id,
+                    id = id,
                     Name = footballTeam.Name,
                     MatchesWon = footballTeam.MatchesWon,
                     MatchesLost = footballTeam.MatchesLost,
@@ -120,7 +120,7 @@ namespace FootballPredictionAPI.Repositories
         {
             CreateDatabaseConnection(out _, out Container container);
             var mappedTeam = _mapper.Map<FootballTeam>(footballTeam);
-            mappedTeam.Id = Guid.NewGuid().ToString();
+            mappedTeam.id = Guid.NewGuid().ToString();
             mappedTeam.Points = CalculatePoints(mappedTeam);
             var createTeam = await container.CreateItemAsync(mappedTeam);
             return createTeam;
@@ -131,13 +131,13 @@ namespace FootballPredictionAPI.Repositories
             CreateDatabaseConnection(out _, out Container container);
             IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
             var matches = queryable
-            .Where(fb => fb.Id!.Equals(id));
+            .Where(fb => fb.id!.Equals(id));
             using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
             while (linqFeed.HasMoreResults)
             {
                 FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
                 var team = response.FirstOrDefault();
-                await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+                await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
                 return team;
             ***REMOVED***
             return null;
@@ -154,7 +154,7 @@ namespace FootballPredictionAPI.Repositories
             {
                 FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
                 var team = response.FirstOrDefault();
-                await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+                await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
                 return team;
             ***REMOVED***
             return null;
@@ -173,7 +173,7 @@ namespace FootballPredictionAPI.Repositories
                 FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
                 foreach (var team in response.Take(10))
                 {
-                    await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+                    await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
                 ***REMOVED***
             ***REMOVED***
             return null;

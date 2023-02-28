@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Collections;
+using System.Net.Http.Headers;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using FootballPredictionAPI.Models;
@@ -14,14 +15,15 @@ namespace FootballPredictionAPI.Controllers
     public class FootballTeamsController : ControllerBase
     {
         private readonly IFootballRepository _repository;
+        private readonly IFootballCosmosRepository _cosmosRepository;
         private readonly IMapper _mapper;
 
-        public FootballTeamsController(IMapper mapper, IFootballRepository repository)
+        public FootballTeamsController(IMapper mapper, IFootballRepository repository, IFootballCosmosRepository _cosmosRepository)
         {
             _mapper = mapper;
             _repository = repository;
+            this._cosmosRepository = _cosmosRepository;
         ***REMOVED***
-
         [HttpGet("getnewmatches")]
         public async Task<ActionResult<IEnumerable<Match>>> GetNewMatches()
         {
@@ -55,7 +57,7 @@ namespace FootballPredictionAPI.Controllers
                 if (homeTeam != null)
                 {
                     FootballTeam? hft = _repository.UpdateHomeTeam(m, homeTeam);
-                    var responseUpdateht = await _repository.UpdateFootballTeam(hft!.Id!, hft);
+                    var responseUpdateht = await _repository.UpdateFootballTeam(hft!.id!, hft);
                     if (responseUpdateht == null)
                     {
                         return BadRequest("Problems while updating home team!");
@@ -85,7 +87,7 @@ namespace FootballPredictionAPI.Controllers
                 if (awayTeam != null)
                 {
                     FootballTeam? aft = _repository.UpdateAwayTeam(m, awayTeam);
-                    var responseUpdateAt = await _repository.UpdateFootballTeam(aft!.Id!, aft);
+                    var responseUpdateAt = await _repository.UpdateFootballTeam(aft!.id!, aft);
                     if (responseUpdateAt == null)
                     {
                         return BadRequest("Problems while updating Away Team!");
@@ -147,13 +149,13 @@ namespace FootballPredictionAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FootballTeamDTO>>> GetTeams()
         {
-            return Ok(await _repository.GetFootballTeams());
+            return Ok(await _cosmosRepository.GetFootballTeams());
         ***REMOVED***
 
         [HttpGet("{id***REMOVED***")]
         public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(string id)
         {
-            var team = _repository.GetFootballTeamById(id);
+            var team = _cosmosRepository.GetFootballTeamById(id);
             if (team.Result == null)
             {
                 return NotFound("No team with that id is in the list.");
@@ -164,7 +166,7 @@ namespace FootballPredictionAPI.Controllers
         [HttpGet("getbyname/{name***REMOVED***")]
         public async Task<ActionResult<FootballTeamDTO>> GetFootballTeamByName(string name)
         {
-            var team = _repository.GetFootballTeamByName(name);
+            var team = _cosmosRepository.GetFootballTeamByName(name);
             if (team.Result == null)
             {
                 return NotFound("No team with that id is in the list.");
@@ -175,50 +177,50 @@ namespace FootballPredictionAPI.Controllers
         [HttpPut("{id***REMOVED***")]
         public async Task<ActionResult<FootballTeamDTO>> PutFootballTeam(string id, FootballTeamDTO footballTeam)
         {
-            var teamToUpdate = await _repository.GetFootballTeamById(id);
+            var teamToUpdate = await _cosmosRepository.GetFootballTeamById(id);
             if (teamToUpdate == null)
             {
                 return NotFound("No team with that id found");
             ***REMOVED***
 
             FootballTeam teamToChange = _mapper.Map<FootballTeam>(footballTeam);
-            teamToChange.Id = id;
-            return Ok(_repository.UpdateFootballTeam(id, teamToChange));
+            teamToChange.id = id;
+            return Ok(_cosmosRepository.UpdateFootballTeam(id, teamToChange));
         ***REMOVED***
 
 
         [HttpPost]
         public async Task<ActionResult<FootballTeam>> PostFootballTeam(FootballTeamDTO footballTeam)
         {
-            if (_repository.GetFootballTeamByName(footballTeam.Name!).Result != null)
+            if (_cosmosRepository.GetFootballTeamByName(footballTeam.Name!).Result != null)
             {
                 return Problem("A team with that name is already in the list!");
             ***REMOVED***
-            var postedTeam = await _repository.AddFootballTeam(footballTeam);
-            return Ok(_mapper.Map<FootballTeamDTO>(postedTeam));
+            var result = _cosmosRepository.AddFootballTeam(footballTeam);
+            return result ? Ok(_mapper.Map<FootballTeamDTO>(footballTeam)) : BadRequest("Error when trying to add team to list");
         ***REMOVED***
 
 
         [HttpDelete("{id***REMOVED***")]
         public async Task<ActionResult<FootballTeam>> DeleteFootballTeam(string id)
         {
-            if (await _repository.GetFootballTeamById(id) == null)
+            if (await _cosmosRepository.GetFootballTeamById(id) == null)
             {
                 return NotFound("No team with that id in the list");
             ***REMOVED***
 
-            return Ok(await _repository.DeleteFootballTeamById(id));
+            return Ok(_cosmosRepository.DeleteFootballTeamById(id));
         ***REMOVED***
 
         [HttpDelete("deletebyname/{name***REMOVED***")]
         public async Task<ActionResult<FootballTeam>> DeleteFootballTeamByName(string name)
         {
-            if (await _repository.GetFootballTeamByName(name) == null)
+            if (await _cosmosRepository.GetFootballTeamByName(name) == null)
             {
                 return NotFound("No team with that name in the list");
             ***REMOVED***
 
-            return Ok(await _repository.DeleteFootballTeamByName(name));
+            return Ok(_cosmosRepository.DeleteFootballTeamByName(name));
         ***REMOVED***
 
         [Obsolete("Not needed after population is done")]
@@ -235,6 +237,11 @@ namespace FootballPredictionAPI.Controllers
         {
             await _repository.PopulateMatches();
         ***REMOVED***
-        
+
+        [HttpGet("queue/getMatches")]
+        public IEnumerable<Match> GetMatchesQueue()
+        {
+            return _cosmosRepository.GetMatchesQueue();
+        ***REMOVED***
     ***REMOVED***
 ***REMOVED***

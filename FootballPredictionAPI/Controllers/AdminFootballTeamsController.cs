@@ -87,7 +87,7 @@ namespace FootballPredictionAPI.Controllers
             ***REMOVED***
 
             FootballTeam teamToChange = _mapper.Map<FootballTeam>(footballTeam);
-            teamToChange.Id = id;
+            teamToChange.id = id;
             return Ok(_repository.UpdateFootballTeam(id, teamToChange));
         ***REMOVED***
 

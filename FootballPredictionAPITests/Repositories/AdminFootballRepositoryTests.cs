@@ -28,7 +28,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
             Debug.WriteLine("Repository tests initialized..");
             footballTeam = new()
             {
-                Id = "Test-01",
+                id = "Test-01",
                 Name = "Test name",
                 Description = "Test 01 team",
                 MatchesWon = 3,
@@ -95,7 +95,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
         {
             var updatedTeam = new FootballTeam()
             {
-                Id = "new Test",
+                id = "new Test",
                 Name = "new test",
                 Description = "new test",
                 MatchesWon = 2,
@@ -119,7 +119,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
         {
             var teamToAdd = new FootballTeam()
             {
-                Id = "Add test id",
+                id = "Add test id",
                 Name = "add test",
                 Description = "add test",
                 MatchesWon = 2,
@@ -128,7 +128,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
             ***REMOVED***;
             var teamToReturn = new FootballTeam()
             {
-                Id = "Add test id",
+                id = "Add test id",
                 Name = "add test",
                 Description = "add test",
                 MatchesWon = 2,

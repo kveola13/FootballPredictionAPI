@@ -2,7 +2,7 @@ namespace FootballPredictionAPI.Models;
 
 public class FootballMatchPred
 {
-    public int Id { get; set; ***REMOVED***
+    public int id { get; set; ***REMOVED***
     public string? HomeTeam { get; set; ***REMOVED***
     public string? AwayTeam { get; set; ***REMOVED***
     public double HTShotsOnTarget { get; set; ***REMOVED***

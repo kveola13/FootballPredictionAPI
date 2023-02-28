@@ -4,7 +4,7 @@ namespace FootballPredictionAPI.Models;
 
 public class MatchTeam
 {
-    public string? Id { get; set; ***REMOVED***
+    public string? id { get; set; ***REMOVED***
     public DateTime? Date { get; set; ***REMOVED***
     public string? Team { get; set; ***REMOVED***
     public string? Opponent { get; set; ***REMOVED***
