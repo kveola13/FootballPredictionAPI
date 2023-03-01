@@ -1,10 +1,16 @@
+using System.Net.Http.Headers;
 using AutoMapper;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using FootballPredictionAPI.Context;
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Interfaces;
 using FootballPredictionAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph;
+using NuGet.Protocol;
 
 namespace FootballPredictionAPI.Repositories;
 
@@ -34,48 +40,58 @@ public class FootballCosmosRepository : IFootballCosmosRepository
         return _mapper.Map<IEnumerable<FootballTeamDTO>>(_context.Teams.ToList());
     ***REMOVED***
 
-    public async Task<FootballTeamDTO?> GetFootballTeamById(string id)
+    public FootballTeamDTO? GetFootballTeamById(string id)
     {
-        FootballTeam team = await _context.Teams.FirstOrDefaultAsync(t => t.id == id);
+        FootballTeam team = _context.Teams.FirstOrDefault(t => t.id == id);
         return team != null ? _mapper.Map<FootballTeamDTO>(team) : null;
     ***REMOVED***
 
-    public async Task<FootballTeamDTO?> GetFootballTeamByName(string name)
+    public FootballTeamDTO? GetFootballTeamByName(string name)
     {
-        FootballTeam team = await _context.Teams.FirstOrDefaultAsync(t => t.Name.ToLower().Equals(name.ToLower()));
+        FootballTeam team = _context.Teams.FirstOrDefault(t => t.Name.ToLower().Equals(name.ToLower()));
         return team != null ? _mapper.Map<FootballTeamDTO>(team) : null;
     ***REMOVED***
 
     public FootballTeam? UpdateFootballTeam(string id, FootballTeam footballTeam)
     {
-        
-        FootballTeam team = new FootballTeam
-        {
-            id = footballTeam.id,
-            Name = footballTeam.Name,
-            MatchesWon = footballTeam.MatchesWon,
-            MatchesLost = footballTeam.MatchesLost,
-            MatchesDraw = footballTeam.MatchesDraw,
-            Description = footballTeam.Description,
-            GoalsScored = footballTeam.GoalsScored,
-            GoalsLost = footballTeam.GoalsLost,
-            MatchesPlayed = footballTeam.MatchesPlayed
-        ***REMOVED***;
-        team.Points = CalculatePoints(team);
-        team.GoalDifference = team.GoalsScored - team.GoalsLost;
 
-        var teamToUpdate = _context.Teams.FirstOrDefault(t => t.id == id);
+        FootballTeam teamToUpdate = _context.Teams.FirstOrDefault(t => t.id == id);
         if (teamToUpdate == null)
         {
-            _context.Teams.Add(team);
+            teamToUpdate = new FootballTeam
+            {
+                id = footballTeam.id,
+                Name = footballTeam.Name,
+                MatchesWon = footballTeam.MatchesWon,
+                MatchesLost = footballTeam.MatchesLost,
+                MatchesDraw = footballTeam.MatchesDraw,
+                Description = footballTeam.Description,
+                GoalsScored = footballTeam.GoalsScored,
+                GoalsLost = footballTeam.GoalsLost,
+                MatchesPlayed = footballTeam.MatchesPlayed
+            ***REMOVED***;
+            
+            teamToUpdate.Points = CalculatePoints(teamToUpdate);
+            teamToUpdate.GoalDifference = teamToUpdate.GoalsScored - teamToUpdate.GoalsLost;
+            _context.Teams.Add(teamToUpdate);
         ***REMOVED***
         else
         {
-            _context.Teams.Update(team);
+            teamToUpdate.Name = footballTeam.Name;
+            teamToUpdate.MatchesWon = footballTeam.MatchesWon;
+            teamToUpdate.MatchesLost = footballTeam.MatchesLost;
+            teamToUpdate.MatchesDraw = footballTeam.MatchesDraw;
+            teamToUpdate.Description = footballTeam.Description;
+            teamToUpdate.GoalsScored = footballTeam.GoalsScored;
+            teamToUpdate.GoalsLost = footballTeam.GoalsLost;
+            teamToUpdate.MatchesPlayed = footballTeam.MatchesPlayed;
+            teamToUpdate.Points = CalculatePoints(teamToUpdate);
+            teamToUpdate.GoalDifference = teamToUpdate.GoalsScored - teamToUpdate.GoalsLost;
+            _context.Teams.Update(teamToUpdate);
         ***REMOVED***
 
         _context.SaveChanges();
-        return team;
+        return teamToUpdate;
     ***REMOVED***
 
     public bool AddFootballTeam(FootballTeamDTO footballTeamDTO)
@@ -136,9 +152,115 @@ public class FootballCosmosRepository : IFootballCosmosRepository
         throw new NotImplementedException();
     ***REMOVED***
 
-    public Task<ActionResult<string>> PredictResult(string team1, string team2)
+    public async Task<ActionResult<string>> PredictResult(string team1, string team2)
     {
-        throw new NotImplementedException();
+        List<MatchTeam> requestData = new();
+
+        var matchesTeam1 = _context.Matches.Where(m => m.HomeTeam.Equals(team1) || m.AwayTeam.Equals(team1)).OrderByDescending(m => m.Date).Take(5);
+        var matchesTeam2 = _context.Matches.Where(m => m.HomeTeam.Equals(team1) || m.AwayTeam.Equals(team1)).OrderByDescending(m => m.Date).Take(5);
+        
+        foreach (var match in matchesTeam1)
+        {
+            var nm = new MatchTeam
+            {
+                Date = match.Date,
+                Team = team1,
+                Opponent = match.HomeTeam == team1 ? match.AwayTeam : match.HomeTeam,
+                Possession = match.HomeTeam == team1 ? match.HTPossession : match.ATPossession,
+                Totalshots = match.HomeTeam == team1 ? match.HTTotalshots : match.ATTotalshots,
+                Accuaracy = match.HomeTeam == team1 ? match.HTAccuaracy : match.ATAccuaracy,
+                Fouls = match.HomeTeam == team1 ? match.HTFouls : match.ATFouls,
+                Yellowcards = match.HomeTeam == team1 ? match.HTYellowcards : match.ATYellowcards,
+                Redcards = match.HomeTeam == team1 ? match.HTRedcards : match.ATRedcards,
+                Offsides = match.HomeTeam == team1 ? match.HTOffsides : match.ATOffsides,
+                Cornerstaken = match.HomeTeam == team1 ? match.HTCornerstaken : match.ATCornerstaken,
+                Goals = match.HomeTeam == team1 ? match.HTGoals : match.ATGoals,
+                OpponentGoals = match.HomeTeam == team1 ? match.ATGoals : match.HTGoals
+            ***REMOVED***;
+            requestData.Add(nm);
+        ***REMOVED***
+        foreach (var match in matchesTeam2)
+        {
+            var nm = new MatchTeam
+            {
+                Date = match.Date,
+                Team = team2,
+                Opponent = match.HomeTeam == team2 ? match.AwayTeam : match.HomeTeam,
+                Possession = match.HomeTeam == team2 ? match.HTPossession : match.ATPossession,
+                Totalshots = match.HomeTeam == team2 ? match.HTTotalshots : match.ATTotalshots,
+                Accuaracy = match.HomeTeam == team2 ? match.HTAccuaracy : match.ATAccuaracy,
+                Fouls = match.HomeTeam == team2 ? match.HTFouls : match.ATFouls,
+                Yellowcards = match.HomeTeam == team2 ? match.HTYellowcards : match.ATYellowcards,
+                Redcards = match.HomeTeam == team2 ? match.HTRedcards : match.ATRedcards,
+                Offsides = match.HomeTeam == team2 ? match.HTOffsides : match.ATOffsides,
+                Cornerstaken = match.HomeTeam == team2 ? match.HTCornerstaken : match.ATCornerstaken,
+                Goals = match.HomeTeam == team2 ? match.HTGoals : match.ATGoals,
+                OpponentGoals = match.HomeTeam == team2 ? match.ATGoals : match.HTGoals
+            ***REMOVED***;
+            requestData.Add(nm);
+        ***REMOVED***
+
+        foreach (var m in requestData)
+        {
+            Console.WriteLine(m);
+        ***REMOVED***
+
+        var request = requestData.ToJson();
+        Console.WriteLine(request);
+        
+        var handler = new HttpClientHandler()
+        {
+            ClientCertificateOptions = ClientCertificateOption.Manual,
+            ServerCertificateCustomValidationCallback =
+                (httpRequestMessage, cert, cetChain, policyErrors) => { return true; ***REMOVED***
+        ***REMOVED***;
+        using var client = new HttpClient(handler);
+        // Request data goes here
+        // The example below assumes JSON formatting which may be updated
+        // depending on the format your endpoint expects.
+        // More information can be found here:
+        // https://docs.microsoft.com/azure/machine-learning/how-to-deploy-advanced-entry-script
+        var requestBody = @"{
+                  ""Inputs"": {
+                    ""input1"": @input
+                  ***REMOVED***,
+                  ""GlobalParameters"": {***REMOVED***
+                ***REMOVED***".Replace("@input", request);
+
+        // Replace this with the primary/secondary key or AMLToken for the endpoint
+
+        if (string.IsNullOrEmpty(StringConstrains.PredictionAPIKey))
+        {
+            throw new Exception("A key should be provided to invoke the endpoint");
+        ***REMOVED***
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", StringConstrains.PredictionAPIKey);
+        client.BaseAddress = new Uri(StringConstrains.PredictionUrl);
+
+        var content = new StringContent(requestBody);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+        // WARNING: The 'await' statement below can result in a deadlock
+        // if you are calling this code from the UI thread of an ASP.Net application.
+        // One way to address this would be to call ConfigureAwait(false)
+        // so that the execution does not attempt to resume on the original context.
+        // For instance, replace code such as:
+        //      result = await DoSomeTask()
+        // with the following:
+        //      result = await DoSomeTask().ConfigureAwait(false)
+        HttpResponseMessage responsePrediction = await client.PostAsync("", content);
+
+        if (responsePrediction.IsSuccessStatusCode)
+        {
+            string result = await responsePrediction.Content.ReadAsStringAsync();
+            string predictions = String.Format("Result: {0***REMOVED***", result);
+            return predictions;
+        ***REMOVED***
+        else
+        {
+            string responseContent = await responsePrediction.Content.ReadAsStringAsync();
+            return string.Format("The request failed with status code: {0***REMOVED***", responsePrediction.StatusCode);
+        ***REMOVED***
     ***REMOVED***
 
     public Task<IEnumerable<Match>> GetNewMatches()

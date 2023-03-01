@@ -135,15 +135,15 @@ namespace FootballPredictionAPI.Controllers
         public async Task<ActionResult<string>> PredictResult(string team1, string team2)
         {
             // Get teams and check if exist
-            var HomeTeam = _repository.GetFootballTeamByName(team1);
-            var AwayTeam = _repository.GetFootballTeamByName(team2);
+            var HomeTeam = _cosmosRepository.GetFootballTeamByName(team1);
+            var AwayTeam = _cosmosRepository.GetFootballTeamByName(team2);
             if (HomeTeam == null || AwayTeam == null)
             {
                 return NotFound("Team(s) not found!");
             ***REMOVED***
 
             
-            return await _repository.PredictResult(team1, team2);
+            return  await _cosmosRepository.PredictResult(team1, team2);
         ***REMOVED***
         
         [HttpGet]
@@ -153,31 +153,31 @@ namespace FootballPredictionAPI.Controllers
         ***REMOVED***
 
         [HttpGet("{id***REMOVED***")]
-        public async Task<ActionResult<FootballTeamDTO>> GetFootballTeam(string id)
+        public ActionResult<FootballTeamDTO> GetFootballTeam(string id)
         {
             var team = _cosmosRepository.GetFootballTeamById(id);
-            if (team.Result == null)
+            if (team == null)
             {
                 return NotFound("No team with that id is in the list.");
             ***REMOVED***
-            return Ok(await team!);
+            return Ok(team!);
         ***REMOVED***
 
         [HttpGet("getbyname/{name***REMOVED***")]
-        public async Task<ActionResult<FootballTeamDTO>> GetFootballTeamByName(string name)
+        public ActionResult<FootballTeamDTO> GetFootballTeamByName(string name)
         {
             var team = _cosmosRepository.GetFootballTeamByName(name);
-            if (team.Result == null)
+            if (team == null)
             {
                 return NotFound("No team with that id is in the list.");
             ***REMOVED***
-            return Ok(await team!);
+            return Ok( team!);
         ***REMOVED***
 
         [HttpPut("{id***REMOVED***")]
         public async Task<ActionResult<FootballTeamDTO>> PutFootballTeam(string id, FootballTeamDTO footballTeam)
         {
-            var teamToUpdate = await _cosmosRepository.GetFootballTeamById(id);
+            var teamToUpdate = _cosmosRepository.GetFootballTeamById(id);
             if (teamToUpdate == null)
             {
                 return NotFound("No team with that id found");
@@ -192,7 +192,7 @@ namespace FootballPredictionAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<FootballTeam>> PostFootballTeam(FootballTeamDTO footballTeam)
         {
-            if (_cosmosRepository.GetFootballTeamByName(footballTeam.Name!).Result != null)
+            if (_cosmosRepository.GetFootballTeamByName(footballTeam.Name!) != null)
             {
                 return Problem("A team with that name is already in the list!");
             ***REMOVED***
@@ -202,9 +202,9 @@ namespace FootballPredictionAPI.Controllers
 
 
         [HttpDelete("{id***REMOVED***")]
-        public async Task<ActionResult<FootballTeam>> DeleteFootballTeam(string id)
+        public  ActionResult<FootballTeam> DeleteFootballTeam(string id)
         {
-            if (await _cosmosRepository.GetFootballTeamById(id) == null)
+            if (_cosmosRepository.GetFootballTeamById(id) == null)
             {
                 return NotFound("No team with that id in the list");
             ***REMOVED***
@@ -213,9 +213,9 @@ namespace FootballPredictionAPI.Controllers
         ***REMOVED***
 
         [HttpDelete("deletebyname/{name***REMOVED***")]
-        public async Task<ActionResult<FootballTeam>> DeleteFootballTeamByName(string name)
+        public ActionResult<FootballTeam> DeleteFootballTeamByName(string name)
         {
-            if (await _cosmosRepository.GetFootballTeamByName(name) == null)
+            if (_cosmosRepository.GetFootballTeamByName(name) == null)
             {
                 return NotFound("No team with that name in the list");
             ***REMOVED***

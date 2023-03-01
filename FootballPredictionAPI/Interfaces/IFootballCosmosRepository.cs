@@ -7,8 +7,8 @@ namespace FootballPredictionAPI.Interfaces;
 public interface IFootballCosmosRepository
 {
     public IEnumerable<FootballTeamDTO> GetFootballTeamDtos();
-    Task<FootballTeamDTO?> GetFootballTeamById(string id);
-    Task<FootballTeamDTO?> GetFootballTeamByName(string name);
+    FootballTeamDTO? GetFootballTeamById(string id);
+    FootballTeamDTO? GetFootballTeamByName(string name);
     FootballTeam? UpdateFootballTeam(string id, FootballTeam footballTeam);
     bool AddFootballTeam(FootballTeamDTO footballTeamDTO);
     FootballTeam? DeleteFootballTeamById(string id);
