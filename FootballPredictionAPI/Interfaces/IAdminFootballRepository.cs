@@ -16,4 +16,4 @@ public interface IAdminFootballRepository
     Task<IEnumerable<FootballTeam>> Seed();
     int CalculatePoints(FootballTeam footballTeam);
     Task<ActionResult<string>> PredictResult(string team1, string team2);
-***REMOVED***
+}

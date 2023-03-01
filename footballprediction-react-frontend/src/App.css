@@ -6,7 +6,7 @@
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-***REMOVED***
+}
 
 h1,
 h2,
@@ -15,19 +15,19 @@ h4,
 h5,
 h6 {
   margin: 8px 0;
-***REMOVED***
+}
 
 p {
   margin: 0;
-***REMOVED***
+}
 
 .title {
   color: #333;
-***REMOVED***
+}
 
 .title{
   color: #333;
-***REMOVED***
+}
 
 .content {
   display: flex;
@@ -36,4 +36,4 @@ p {
   max-width: 960px;
   flex-direction: column;
   align-items: center;
-***REMOVED***
+}

@@ -20,7 +20,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
         {
             _repository = new Mock<IAdminFootballRepository>();
             _footballRepository = new AdminFootballRepository(null!, null!, null!);
-        ***REMOVED***
+        }
 
         [TestInitialize]
         public void Init()
@@ -34,7 +34,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
                 MatchesWon = 3,
                 MatchesLost = 2,
                 MatchesDraw = 1
-            ***REMOVED***;
+            };
             footballTeamDTO = new()
             {
                 Name = "Test-DTO",
@@ -42,14 +42,14 @@ namespace FootballPredictionAPITests.Repositories.Tests
                 MatchesWon = 4,
                 MatchesLost = 5,
                 MatchesDraw = 6
-            ***REMOVED***;
-        ***REMOVED***
+            };
+        }
 
         [TestCleanup]
         public void Cleanup()
         {
             Debug.WriteLine("Repository tests terminated..");
-        ***REMOVED***
+        }
 
         [TestMethod("Get football teams")]
         public void GetFootballTeamsTest()
@@ -57,7 +57,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
             var teamList = new List<FootballTeam>() {
                 new FootballTeam(),
                 new FootballTeam()
-            ***REMOVED***;
+            };
             _repository!.Setup<Task<IEnumerable<FootballTeam>>>(
                 rep => rep.GetFootballTeams()!
             ).Returns(Task.FromResult<IEnumerable<FootballTeam>>(teamList));
@@ -65,7 +65,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
 
             Assert.AreEqual(teamList, result);
             Assert.AreEqual(2, teamList.Count);
-        ***REMOVED***
+        }
 
         [TestMethod("Get football team by id")]
         public void GetFootballTeamByIdTest()
@@ -77,7 +77,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
             var result = _repository.Object.GetFootballTeamById("Test-01").Result;
 
             Assert.AreEqual(footballTeam, result);
-        ***REMOVED***
+        }
 
         [TestMethod("Get football team by name")]
         public void GetFootballTeamByNameTest()
@@ -88,7 +88,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
             var result = _repository.Object.GetFootballTeamByName("Test name").Result;
 
             Assert.AreEqual(footballTeam, result);
-        ***REMOVED***
+        }
 
         [TestMethod("Update football team")]
         public void UpdateFootballTeamTest()
@@ -101,7 +101,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
                 MatchesWon = 2,
                 MatchesDraw = 2,
                 MatchesLost = 2,
-            ***REMOVED***;
+            };
 
             _repository!.Setup<Task<FootballTeam>>(
                 rep => rep.UpdateFootballTeam("test", updatedTeam)!
@@ -112,7 +112,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
             var result = _repository.Object.UpdateFootballTeam("test", updatedTeam).Result;
 
             Assert.AreEqual(updatedTeam, result);
-        ***REMOVED***
+        }
 
         [TestMethod("Add a football team")]
         public void AddFootballTeamTest()
@@ -125,7 +125,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
                 MatchesWon = 2,
                 MatchesDraw = 2,
                 MatchesLost = 2,
-            ***REMOVED***;
+            };
             var teamToReturn = new FootballTeam()
             {
                 id = "Add test id",
@@ -134,7 +134,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
                 MatchesWon = 2,
                 MatchesDraw = 2,
                 MatchesLost = 2,
-            ***REMOVED***;
+            };
 
             _repository!.Setup<Task<FootballTeam>>(
                 rep => rep.AddFootballTeam(teamToAdd)!
@@ -145,7 +145,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
             Assert.AreNotEqual(teamToAdd, teamToReturn);
             Assert.AreNotSame(teamToAdd, teamToReturn);
             Assert.AreSame(result, teamToReturn);
-        ***REMOVED***
+        }
 
         [TestMethod("Delete a football team by id")]
         public void DeleteFootballTeamByIdTest()
@@ -166,7 +166,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
 
             Assert.AreEqual(result, footballTeam);
             Assert.IsNull(getTeam);
-        ***REMOVED***
+        }
 
         [TestMethod("Delete a football team by name")]
         public void DeleteFootballTeamByNameTest()
@@ -186,7 +186,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
 
             Assert.AreEqual(result, footballTeam);
             Assert.IsNull(getTeam);
-        ***REMOVED***
+        }
 
         [Obsolete("No longer in use")]
         [Ignore("Should not be needed to test")]
@@ -194,7 +194,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
         public void SeedTest()
         {
             Assert.Fail();
-        ***REMOVED***
+        }
 
         [TestMethod("Calculate points for a football team")]
         [Priority(9)]
@@ -203,7 +203,7 @@ namespace FootballPredictionAPITests.Repositories.Tests
         {
             var calculatedScore = _footballRepository!.CalculatePoints(footballTeam!);
             Assert.AreEqual(10, calculatedScore);
-        ***REMOVED***
+        }
 
         [Obsolete("No longer in use")]
         [Ignore("Should not be needed to test")]
@@ -211,6 +211,6 @@ namespace FootballPredictionAPITests.Repositories.Tests
         public void FootballTeamTableExistsTest()
         {
             Assert.Fail();
-        ***REMOVED***
-    ***REMOVED***
-***REMOVED***
+        }
+    }
+}

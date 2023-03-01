@@ -31,4 +31,4 @@ public interface IFootballRepository
     FootballTeam? UpdateAwayTeam(FootballMatch footballMatch, FootballTeam footballTeam);
     Task<FootballTeam?> GetTeamByName(string teamName);
     Task<FootballTeam?> AddTeam(FootballTeam ft);
-***REMOVED***
+}

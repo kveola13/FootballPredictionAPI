@@ -8,32 +8,32 @@
       "metadata": {
         "_parameterType": "resourceGroup",
         "description": "Name of the resource group for the resource. It is recommended to put resources under same resource group for better tracking."
-      ***REMOVED***
-    ***REMOVED***,
+      }
+    },
     "resourceGroupLocation": {
       "type": "string",
       "defaultValue": "westeurope",
       "metadata": {
         "_parameterType": "location",
         "description": "Location of the resource group. Resource groups could have different location than resources."
-      ***REMOVED***
-    ***REMOVED***,
+      }
+    },
     "resourceLocation": {
       "type": "string",
       "defaultValue": "[parameters('resourceGroupLocation')]",
       "metadata": {
         "_parameterType": "location",
         "description": "Location of the resource. By default use resource group's location, unless the resource provider is not supported there."
-      ***REMOVED***
-    ***REMOVED***
-  ***REMOVED***,
+      }
+    }
+  },
   "resources": [
     {
       "type": "Microsoft.Resources/resourceGroups",
       "name": "[parameters('resourceGroupName')]",
       "location": "[parameters('resourceGroupLocation')]",
       "apiVersion": "2019-10-01"
-    ***REMOVED***,
+    },
     {
       "type": "Microsoft.Resources/deployments",
       "name": "[concat(parameters('resourceGroupName'), 'Deployment', uniqueString(concat('FootballPredictionAPI', subscription().subscriptionId)))]",
@@ -66,7 +66,7 @@
                     "negotiateClientCertificate": false,
                     "certificate": null,
                     "defaultSslBinding": true
-                  ***REMOVED***
+                  }
                 ],
                 "publicIPAddresses": null,
                 "privateIPAddresses": null,
@@ -79,21 +79,21 @@
                   "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls11": "False",
                   "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Ssl30": "False",
                   "Microsoft.WindowsAzure.ApiManagement.Gateway.Protocols.Server.Http2": "False"
-                ***REMOVED***,
+                },
                 "virtualNetworkType": "None",
                 "certificates": null,
                 "enableClientCertificate": false,
                 "disableGateway": false,
                 "apiVersionConstraint": {
                   "minApiVersion": null
-                ***REMOVED***
-              ***REMOVED***,
+                }
+              },
               "sku": {
                 "name": "Consumption",
                 "capacity": 0
-              ***REMOVED***,
+              },
               "apiVersion": "2019-12-01"
-            ***REMOVED***,
+            },
             {
               "type": "Microsoft.ApiManagement/service/apis",
               "name": "FootballPredictionAMS/FootballPredictionAPI",
@@ -110,24 +110,24 @@
                 "authenticationSettings": {
                   "oAuth2": null,
                   "openid": null
-                ***REMOVED***,
+                },
                 "subscriptionKeyParameterNames": {
                   "header": "Ocp-Apim-Subscription-Key",
                   "query": "subscription-key"
-                ***REMOVED***,
+                },
                 "isCurrent": true
-              ***REMOVED***,
+              },
               "apiVersion": "2019-12-01",
               "dependsOn": [
                 "FootballPredictionAMS"
               ]
-            ***REMOVED***
+            }
           ]
-        ***REMOVED***
-      ***REMOVED***
-    ***REMOVED***
+        }
+      }
+    }
   ],
   "metadata": {
     "_dependencyType": "apis.azure"
-  ***REMOVED***
-***REMOVED***
+  }
+}

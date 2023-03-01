@@ -5,9 +5,9 @@ namespace FootballPredictionAPI.Context
 {
     public class FootballTeamContext : DbContext
     {
-        public FootballTeamContext(DbContextOptions<FootballTeamContext> options) : base(options) { ***REMOVED***
-        public DbSet<FootballTeam> Teams { get; set; ***REMOVED***
-        public DbSet<FootballMatch> Matches { get; set; ***REMOVED***
+        public FootballTeamContext(DbContextOptions<FootballTeamContext> options) : base(options) { }
+        public DbSet<FootballTeam> Teams { get; set; }
+        public DbSet<FootballMatch> Matches { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -16,14 +16,14 @@ namespace FootballPredictionAPI.Context
                 team.ToContainer("teams");
                 team.HasPartitionKey(x => x.id);
                 team.HasNoDiscriminator();
-            ***REMOVED***);
+            });
             modelBuilder.Entity<FootballMatch>(match =>
             {
                 match.ToContainer("matches");
                 match.HasPartitionKey(x => x.id);
                 match.HasNoDiscriminator();
-            ***REMOVED***);
+            });
             base.OnModelCreating(modelBuilder);
-        ***REMOVED***
-    ***REMOVED***
-***REMOVED***
+        }
+    }
+}

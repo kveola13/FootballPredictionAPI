@@ -6,26 +6,26 @@
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  ***REMOVED***
+  }
   .left-span{
     margin-left: 3em;
     color: #ffd700;
-  ***REMOVED***
+  }
   
   .link {
     margin-left: 2.5em;
     color: #ffd700;
     text-decoration: none;
-  ***REMOVED***
+  }
   .link:hover {
     opacity: 0.8;
     color: #96bffc;
     cursor: pointer;
-  ***REMOVED***
+  }
   
   .spacer {
     flex: 1;
-  ***REMOVED***
+  }
   
   .toolbar {
     position: absolute;
@@ -38,24 +38,24 @@
     background-color: 	#0057b7;
     color: #fff;
     font-weight: 600;
-  ***REMOVED***
+  }
   
   .toolbar img {
     margin: 0 16px;
-  ***REMOVED***
+  }
   
   .toolbar #twitter-logo {
     height: 40px;
     margin: 0 8px;
-  ***REMOVED***
+  }
   
   .toolbar #youtube-logo {
     height: 40px;
     margin: 0 16px;
-  ***REMOVED***
+  }
   
   .toolbar #twitter-logo:hover,
   .toolbar #youtube-logo:hover {
     opacity: 0.8;
-  ***REMOVED***
+  }
   

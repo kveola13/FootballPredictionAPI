@@ -13,14 +13,14 @@ public class WebCrawler
     private readonly string _seed = "https://www.laliga.com/en-NO/laliga-santander/results";
     const string _matchDay = "laliga-santander/results/2022-23/gameweek";
     private const string _baseUrl = "https://www.laliga.com";
-    private MapperConfiguration config = new MapperConfiguration(cfg => {  ***REMOVED***);
+    private MapperConfiguration config = new MapperConfiguration(cfg => {  });
     private IMapper _mapper;
 
     public WebCrawler()
     {
         //_mapper = new Mapper(config);
         _mapper = config.CreateMapper();
-    ***REMOVED***
+    }
     
     public List<List<string>> GetMatchDayResults(string matchDayUrl)
     {
@@ -28,7 +28,7 @@ public class WebCrawler
         HtmlDocument htmlDocument = web.Load(matchDayUrl);
         var res = GetTable(htmlDocument);
         return res;
-    ***REMOVED***
+    }
 
     private List<List<string>> GetTable(HtmlDocument day)
     {
@@ -47,8 +47,8 @@ public class WebCrawler
                         {
                             string linkurl = _baseUrl + link;
                             line.Add(linkurl);
-                        ***REMOVED***
-                    ***REMOVED***
+                        }
+                    }
                     else
                     {
                         if (cell.InnerText != "")
@@ -59,25 +59,25 @@ public class WebCrawler
                                 foreach (var d in divs)
                                 {
                                     line.Add(d.InnerText);
-                                ***REMOVED***
-                            ***REMOVED***
+                                }
+                            }
                             else
                             {
                                 line.Add(cell.InnerText);
-                            ***REMOVED***
-                        ***REMOVED***
-                    ***REMOVED***
-                ***REMOVED***
+                            }
+                        }
+                    }
+                }
 
                 if (line.Count > 2)
                 {
                     rows.Add(line);
-                ***REMOVED***
-            ***REMOVED***
-        ***REMOVED***
+                }
+            }
+        }
         
         return rows;
-    ***REMOVED***
+    }
     
     public List<string> GetMatchDays()
     {
@@ -97,12 +97,12 @@ public class WebCrawler
                 string newPage = _baseUrl + page;
                 Console.WriteLine(newPage);
                 matchDays.Add(newPage);
-            ***REMOVED***
-        ***REMOVED***
+            }
+        }
 
         Console.WriteLine(matchDays.Count);
         return matchDays;
-    ***REMOVED***
+    }
 
     
 
@@ -133,15 +133,15 @@ public class WebCrawler
                     dict.Add(home, Convert.ToDouble(features[0].Replace("%", "").Replace(".", ",")));
                     dict.Add(away, Convert.ToDouble(features[2].Replace("%", "").Replace(".", ",")));
 
-                ***REMOVED***
-            ***REMOVED***
-        ***REMOVED***
+                }
+            }
+        }
         FootballMatch mp = _mapper.Map<FootballMatch>(dict);
 
         foreach (PropertyInfo property in typeof(Match).GetProperties().Where(p => p.CanWrite))
         {
             property.SetValue(mp, property.GetValue(match, null), null);
-        ***REMOVED***
+        }
         return mp;
-    ***REMOVED***
-***REMOVED***
+    }
+}

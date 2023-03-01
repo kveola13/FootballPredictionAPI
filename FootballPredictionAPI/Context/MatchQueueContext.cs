@@ -8,8 +8,8 @@ public class MatchQueueContext : DbContext
     public MatchQueueContext(DbContextOptions<MatchQueueContext> options) : base(options)
     {
         
-    ***REMOVED***
-    public DbSet<Match> Matches { get; set; ***REMOVED***
+    }
+    public DbSet<Match> Matches { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -18,7 +18,7 @@ public class MatchQueueContext : DbContext
             match.ToContainer("matchesqueue");
             match.HasPartitionKey(x => x.id);
             match.HasNoDiscriminator();
-        ***REMOVED***);
+        });
         base.OnModelCreating(modelBuilder);
-    ***REMOVED***
-***REMOVED***
+    }
+}

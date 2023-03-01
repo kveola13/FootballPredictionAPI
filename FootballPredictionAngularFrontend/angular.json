@@ -2,7 +2,7 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "cli": {
     "analytics": "caa5c90f-1fb9-4f29-996d-75d5c4f49db6"
-  ***REMOVED***,
+  },
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
@@ -11,8 +11,8 @@
       "schematics": {
         "@schematics/angular:application": {
           "strict": true
-        ***REMOVED***
-      ***REMOVED***,
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -39,14 +39,14 @@
             "sourceMap": true,
             "optimization": false,
             "namedChunks": true
-          ***REMOVED***,
+          },
           "configurations": {
             "production": {
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
-                ***REMOVED***
+                }
               ],
               "optimization": true,
               "outputHashing": "all",
@@ -60,34 +60,34 @@
                   "type": "initial",
                   "maximumWarning": "500kb",
                   "maximumError": "1mb"
-                ***REMOVED***,
+                },
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "2kb",
                   "maximumError": "4kb"
-                ***REMOVED***
+                }
               ]
-            ***REMOVED***
-          ***REMOVED***,
+            }
+          },
           "defaultConfiguration": ""
-        ***REMOVED***,
+        },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "browserTarget": "FootballPredictionAngularFrontend:build"
-          ***REMOVED***,
+          },
           "configurations": {
             "production": {
               "browserTarget": "FootballPredictionAngularFrontend:build:production"
-            ***REMOVED***
-          ***REMOVED***
-        ***REMOVED***,
+            }
+          }
+        },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
             "browserTarget": "FootballPredictionAngularFrontend:build"
-          ***REMOVED***
-        ***REMOVED***,
+          }
+        },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
@@ -103,21 +103,21 @@
               "src/styles.css"
             ],
             "scripts": []
-          ***REMOVED***
-        ***REMOVED***,
+          }
+        },
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
             "devServerTarget": "FootballPredictionAngularFrontend:serve"
-          ***REMOVED***,
+          },
           "configurations": {
             "production": {
               "devServerTarget": "FootballPredictionAngularFrontend:serve:production"
-            ***REMOVED***
-          ***REMOVED***
-        ***REMOVED***
-      ***REMOVED***
-    ***REMOVED***
-  ***REMOVED***
-***REMOVED***
+            }
+          }
+        }
+      }
+    }
+  }
+}

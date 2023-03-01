@@ -26,9 +26,9 @@ var containerName = "teams";
 
 builder.Services.AddDbContext<FootballTeamContext>(options => options.UseCosmos(StringConstrains.APIConnectionString, StringConstrains.DatabaseName));
 builder.Services.AddDbContext<MatchQueueContext>(options => options.UseCosmos(StringConstrains.QueueConnectionString ,StringConstrains.QueueDBName));
-var CosmosClient = new CosmosClient(StringConstrains.APIConnectionString, new CosmosClientOptions() { ***REMOVED*** ).CreateDatabaseIfNotExistsAsync(StringConstrains.DatabaseName);
+var CosmosClient = new CosmosClient(StringConstrains.APIConnectionString, new CosmosClientOptions() { } ).CreateDatabaseIfNotExistsAsync(StringConstrains.DatabaseName);
 
-CosmosClient.Result.Database.CreateContainerIfNotExistsAsync(new ContainerProperties() { PartitionKeyPath="/id", Id=containerName ***REMOVED***);
+CosmosClient.Result.Database.CreateContainerIfNotExistsAsync(new ContainerProperties() { PartitionKeyPath="/id", Id=containerName });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"))
@@ -37,7 +37,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddInMemoryTokenCaches();
 
 builder.Services.AddControllers();
-//builder.Services.AddDbContext<FootballTeamContext>(optionsAction => optionsAction.UseCosmos(accountEndpoint!, accountKey!, dbName!));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -54,7 +53,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-***REMOVED***
+}
 
 app.UseHttpsRedirection();
 

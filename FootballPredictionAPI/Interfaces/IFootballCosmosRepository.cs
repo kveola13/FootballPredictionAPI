@@ -29,4 +29,4 @@ public interface IFootballCosmosRepository
     Task<FootballTeam?> GetTeamByName(string teamName);
     bool AddTeam(FootballTeam ft);
     IEnumerable<Match> GetMatchesQueue();
-***REMOVED***
+}
