@@ -42,7 +42,7 @@ public class FootballRepository : IFootballRepository
     {
         CreateQueueConnection(out _, out Container container);
         string today = DateTime.Now.Date.ToString();
-        QueryDefinition query = new($"select * from c where c.Date < '{today***REMOVED***' order by c.Date offset 0 limit 1");
+        QueryDefinition query = new($"select * from c where c.Date < '{today}' order by c.Date offset 0 limit 1");
         var dbContainerResponse = container.GetItemQueryIterator<Match>(query);
         List<Match> URIs = new();
         while (dbContainerResponse.HasMoreResults)
