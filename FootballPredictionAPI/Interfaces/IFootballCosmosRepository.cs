@@ -17,7 +17,7 @@ public interface IFootballCosmosRepository
 
     int CalculatePoints(FootballTeam footballTeam);
 
-    Task PopulateMatches();
+    void PopulateMatches();
     Task<ActionResult<string>> PredictResult(string team1, string team2);
     IEnumerable<Match> GetNewMatches();
     void PopulateMatchesToCome();

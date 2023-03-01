@@ -1,16 +1,15 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using AutoMapper;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
+using CsvHelper;
 using FootballPredictionAPI.Context;
 using FootballPredictionAPI.DTOs;
 using FootballPredictionAPI.Interfaces;
 using FootballPredictionAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Graph;
 using NuGet.Protocol;
+
 
 namespace FootballPredictionAPI.Repositories;
 
@@ -147,9 +146,26 @@ public class FootballCosmosRepository : IFootballCosmosRepository
         return (footballTeam.MatchesWon * 3) + footballTeam.MatchesDraw;
     }
     
-    public Task PopulateMatches()
+    [Obsolete("Not needed after initial population of db")]
+    public void PopulateMatches()
     {
-        throw new NotImplementedException();
+        // Add matches
+        IEnumerable<FootballMatch> records;
+        using (var reader = new StreamReader("Data/matches_teams_current.csv"))
+        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+        {
+            records = csv.GetRecords<FootballMatch>().ToList();
+        }
+
+        records = records.Skip(1);
+
+        foreach (var record in records)
+        {
+            
+            // Here add to db
+            record.id = Guid.NewGuid().ToString();
+            _context.Matches.Add(record);
+        }
     }
 
     public async Task<ActionResult<string>> PredictResult(string team1, string team2)
@@ -265,7 +281,7 @@ public class FootballCosmosRepository : IFootballCosmosRepository
 
     public IEnumerable<Match> GetNewMatches()
     {
-        var URIs = _matchesContext.Matches.AsEnumerable().Where(m => m.Date < DateTime.Now.Date).OrderBy(m => m.Date).Take(1);
+        var URIs = _matchesContext.Matches.Where(m => m.Date < DateTime.Now).OrderBy(m => m.Date).Take(1);
         return URIs;
     }
 
