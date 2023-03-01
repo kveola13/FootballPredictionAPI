@@ -4,23 +4,23 @@
       "type": "secrets",
       "connectionId": "VaultUri",
       "dynamicId": null
-    ***REMOVED***,
+    },
     "cosmosdb1": {
       "type": "cosmosdb",
       "connectionId": "ConnectionStrings"
-    ***REMOVED***,
+    },
     "identityapp1": {
       "type": "identityapp",
       "connectionId": "AzureAD:ClientSecret",
       "dynamicId": null
-    ***REMOVED***,
+    },
     "secrets2": {
       "type": "secrets",
       "connectionId": "VaultUri",
       "dynamicId": null
-    ***REMOVED***,
+    },
     "apis1": {
       "type": "apis"
-    ***REMOVED***
-  ***REMOVED***
-***REMOVED***
+    }
+  }
+}

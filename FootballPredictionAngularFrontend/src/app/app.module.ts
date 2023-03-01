@@ -1,14 +1,14 @@
-import { NgModule ***REMOVED*** from '@angular/core';
-import { BrowserModule ***REMOVED*** from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
 
-import { AppRoutingModule ***REMOVED*** from './app-routing.module';
-import { AppComponent ***REMOVED*** from './app.component';
-import { HeaderComponent ***REMOVED*** from './header/header.component';
-import { FooterComponent ***REMOVED*** from './footer/footer.component';
-import { IndexComponent ***REMOVED*** from './index/index.component';
-import { AboutComponent ***REMOVED*** from './about/about.component';
-import { PagenotfoundComponent ***REMOVED*** from './pagenotfound/pagenotfound.component';
-import { HomeComponent ***REMOVED*** from './home/home.component';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { HeaderComponent } from './header/header.component';
+import { FooterComponent } from './footer/footer.component';
+import { IndexComponent } from './index/index.component';
+import { AboutComponent } from './about/about.component';
+import { PagenotfoundComponent } from './pagenotfound/pagenotfound.component';
+import { HomeComponent } from './home/home.component';
 
 @NgModule({
   declarations: [
@@ -26,5 +26,5 @@ import { HomeComponent ***REMOVED*** from './home/home.component';
   ],
   providers: [],
   bootstrap: [AppComponent]
-***REMOVED***)
-export class AppModule { ***REMOVED***
+})
+export class AppModule { }

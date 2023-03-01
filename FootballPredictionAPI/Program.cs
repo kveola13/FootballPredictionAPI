@@ -14,17 +14,21 @@ var builder = WebApplication.CreateBuilder(args);
 var keyvaultUri = builder.Configuration.GetConnectionString("VaultUri")!;
 var keyVaultEndpoint = new Uri(keyvaultUri)!;
 var client = new SecretClient(keyVaultEndpoint!, new DefaultAzureCredential());
-var accountEndpoint = client.GetSecretAsync("CosmosDBEndpoint").Result.Value.Value;
-var accountKey = client.GetSecretAsync("CosmosDBKey").Result.Value.Value;
-var dbName = client.GetSecretAsync("DatabaseName").Result.Value.Value;
+StringConstrains.APIConnectionString = client.GetSecretAsync("ConnectionStrings").Result.Value.Value;
+StringConstrains.QueueConnectionString = client.GetSecretAsync("queueConnectionString").Result.Value.Value;
+StringConstrains.DatabaseName = client.GetSecretAsync("DatabaseName").Result.Value.Value;
+StringConstrains.QueueDBName = client.GetSecretAsync("queueDBname").Result.Value.Value;
+StringConstrains.PredictionUrl = client.GetSecretAsync("prediction-endpoint-url").Result.Value.Value;
+StringConstrains.PredictionAPIKey = client.GetSecretAsync("prediction-endpoint-api-key").Result.Value.Value;
 var containerName = "teams";
 
 
-var CosmosClient = new CosmosClient(client.GetSecretAsync("ConnectionStrings").Result.Value.Value, 
-    new CosmosClientOptions() { ***REMOVED*** )
-    .CreateDatabaseIfNotExistsAsync(dbName);
 
-CosmosClient.Result.Database.CreateContainerIfNotExistsAsync(new ContainerProperties() { PartitionKeyPath="/id", Id=containerName ***REMOVED***);
+builder.Services.AddDbContext<FootballTeamContext>(options => options.UseCosmos(StringConstrains.APIConnectionString, StringConstrains.DatabaseName));
+builder.Services.AddDbContext<MatchQueueContext>(options => options.UseCosmos(StringConstrains.QueueConnectionString ,StringConstrains.QueueDBName));
+var CosmosClient = new CosmosClient(StringConstrains.APIConnectionString, new CosmosClientOptions() { } ).CreateDatabaseIfNotExistsAsync(StringConstrains.DatabaseName);
+
+CosmosClient.Result.Database.CreateContainerIfNotExistsAsync(new ContainerProperties() { PartitionKeyPath="/id", Id=containerName });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"))
@@ -33,13 +37,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddInMemoryTokenCaches();
 
 builder.Services.AddControllers();
-builder.Services.AddDbContext<FootballTeamContext>(optionsAction => optionsAction.UseCosmos(accountEndpoint!, accountKey!, dbName!));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 IMapper? mapper = MappingConfig.RegisterMaps().CreateMapper();
 builder.Services.AddScoped<IFootballRepository, FootballRepository>();
 builder.Services.AddScoped<IAdminFootballRepository, AdminFootballRepository>();
+builder.Services.AddScoped<IFootballCosmosRepository, FootballCosmosRepository>();
 builder.Services.AddSingleton(mapper);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -49,7 +53,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-***REMOVED***
+}
 
 app.UseHttpsRedirection();
 

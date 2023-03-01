@@ -7,18 +7,18 @@
       "commands": [
         "dotnet-msidentity"
       ]
-    ***REMOVED***,
+    },
     "swashbuckle.aspnetcore.cli": {
       "version": "6.4.0",
       "commands": [
         "swagger"
       ]
-    ***REMOVED***,
+    },
     "dotnet-ef": {
       "version": "7.0.2",
       "commands": [
         "dotnet-ef"
       ]
-    ***REMOVED***
-  ***REMOVED***
-***REMOVED***
+    }
+  }
+}

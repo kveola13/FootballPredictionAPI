@@ -52,6 +52,6 @@ function Header() {
       </div>
     </div>
   );
-***REMOVED***
+}
 
 export default Header;

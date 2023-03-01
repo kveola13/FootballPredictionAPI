@@ -13,6 +13,7 @@ using CsvHelper;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using NuGet.Protocol;
 using File = System.IO.File;
@@ -35,7 +36,7 @@ public class FootballRepository : IFootballRepository
         _mapper = mapper;
         _configuration = configuration;
         _webCrawler = new WebCrawler.WebCrawler();
-    ***REMOVED***
+    }
 
     public async Task<IEnumerable<Match>> GetNewMatches()
     {
@@ -50,24 +51,24 @@ public class FootballRepository : IFootballRepository
             foreach (var match in response)
             {
                 URIs.Add(match);
-            ***REMOVED***
-        ***REMOVED***
+            }
+        }
         return URIs;
-    ***REMOVED***
+    }
 
     public FootballMatch ReadStatsForMatch(Match match)
     {
         FootballMatch fm = _webCrawler.ReadStatsForMatch(match);
         return fm;
-    ***REMOVED***
+    }
 
     public async Task<FootballMatch?> AddFootballMatchWithStats(FootballMatch footballMatchesWithStats)
     {
         CreateContainerMatches(out _, out Container container);
-        footballMatchesWithStats.Id = Guid.NewGuid().ToString();
+        footballMatchesWithStats.id = Guid.NewGuid().ToString();
         var createResponse = await container.CreateItemAsync(footballMatchesWithStats);
         return createResponse;
-    ***REMOVED***
+    }
 
     public async Task<IEnumerable<Match>> DeleteFromQueue(IEnumerable<Match> matchesToDelete)
     {
@@ -77,22 +78,22 @@ public class FootballRepository : IFootballRepository
         {
             IOrderedQueryable<Match> queryable = container.GetItemLinqQueryable<Match>();
             var matches = queryable
-                .Where(fm => fm.Id!.Equals(m.Id));
+                .Where(fm => fm.id!.Equals(m.id));
             using FeedIterator<Match> linqFeed = matches.ToFeedIterator();
             while (linqFeed.HasMoreResults)
             {
                 FeedResponse<Match> response = await linqFeed.ReadNextAsync();
                 
                 var match = response.FirstOrDefault();
-                var resp = await container.DeleteItemAsync<Match>(match!.Id, new PartitionKey(match!.Id));
+                var resp = await container.DeleteItemAsync<Match>(match!.id, new PartitionKey(match!.id));
                 if (resp != null)
                 {
                     deleted.Add(match);
-                ***REMOVED***
-            ***REMOVED***
-        ***REMOVED***
+                }
+            }
+        }
         return deleted;
-    ***REMOVED***
+    }
 
     public FootballTeam? UpdateAwayTeam(FootballMatch m, FootballTeam t)
     {
@@ -105,7 +106,7 @@ public class FootballRepository : IFootballRepository
         t.Points = CalculatePoints(t);
         t.GoalDifference = t.GoalsScored - t.GoalsLost;
         return t;
-    ***REMOVED***
+    }
 
     [Obsolete("One time job & has been run already")]
     public async Task PopulateMatchesToCome()
@@ -125,10 +126,10 @@ public class FootballRepository : IFootballRepository
                     var m = new Match();
                     m.ReadValues(data);
                     linesToMatches.Add(m);
-                ***REMOVED***
-            ***REMOVED***
+                }
+            }
             matches = matches.Concat(linesToMatches).ToList();
-        ***REMOVED***
+        }
         // Connect to db container 
         
         CreateQueueConnection(out _, out Container container);
@@ -136,11 +137,11 @@ public class FootballRepository : IFootballRepository
         // Add matches to db
         foreach (var match in matches)
         {
-            match.Id = Guid.NewGuid().ToString();
+            match.id = Guid.NewGuid().ToString();
             var createItem = await container.CreateItemAsync(match);
-        ***REMOVED***
+        }
         
-    ***REMOVED***
+    }
     public async Task<IEnumerable<FootballTeamDTO?>> GetFootballTeams()
     {
         CreateDatabaseConnection(out _, out Container container);
@@ -152,26 +153,30 @@ public class FootballRepository : IFootballRepository
             foreach (FootballTeamDTO team in response)
             {
                 list.Add(team);
-            ***REMOVED***
-        ***REMOVED***
+            }
+        }
         return list;
-    ***REMOVED***
+    }
 
     public async Task<FootballTeamDTO?> GetFootballTeamById(string id)
     {
         CreateDatabaseConnection(out _, out Container container);
         IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
         var matches = queryable
-        .Where(fb => fb.Id!.Equals(id));
+        .Where(fb => fb.id!.Equals(id));
         using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
         while (linqFeed.HasMoreResults)
         {
             FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
             return _mapper.Map<FootballTeamDTO>(response.FirstOrDefault());
-        ***REMOVED***
+        }
         return null;
-    ***REMOVED***
+    }
 
+    public async Task<List<FootballTeam>> GetFootballTeamsCosmos()
+    {
+        return await _context.Teams.ToListAsync();
+    }
     public async Task<FootballTeamDTO?> GetFootballTeamByName(string name)
     {
         CreateDatabaseConnection(out _, out Container container);
@@ -183,9 +188,9 @@ public class FootballRepository : IFootballRepository
         {
             FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
             return _mapper.Map<FootballTeamDTO>(response.FirstOrDefault());
-        ***REMOVED***
+        }
         return null;
-    ***REMOVED***
+    }
     
     public async Task<FootballTeam?> GetTeamByName(string name)
     {
@@ -198,17 +203,17 @@ public class FootballRepository : IFootballRepository
         {
             FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
             return response.FirstOrDefault();
-        ***REMOVED***
+        }
         return null;
-    ***REMOVED***
+    }
 
     public async Task<FootballTeam?> AddTeam(FootballTeam ft)
     {
         CreateDatabaseConnection(out _, out Container container);
-        ft.Id = Guid.NewGuid().ToString();
+        ft.id = Guid.NewGuid().ToString();
         var createTeam = await container.CreateItemAsync(ft);
         return createTeam;
-    ***REMOVED***
+    }
     public FootballTeam? UpdateHomeTeam(FootballMatch m, FootballTeam t)
     {
         t.MatchesWon += m.HTGoals > m.ATGoals ? 1 : 0;
@@ -220,14 +225,14 @@ public class FootballRepository : IFootballRepository
         t.Points = CalculatePoints(t);
         t.GoalDifference = t.GoalsScored - t.GoalsLost;
         return t;
-    ***REMOVED***
+    }
 
     public async Task<FootballTeam?> UpdateFootballTeam(string id, FootballTeam footballTeam)
     {
         CreateDatabaseConnection(out _, out Container container);
         IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
         var matches = queryable
-        .Where(fb => fb.Id!.Equals(id));
+        .Where(fb => fb.id!.Equals(id));
         using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
         while (linqFeed.HasMoreResults)
         {
@@ -235,7 +240,7 @@ public class FootballRepository : IFootballRepository
             var team = response.FirstOrDefault();
             team = new FootballTeam
             {
-                Id = footballTeam.Id,
+                id = footballTeam.id,
                 Name = footballTeam.Name,
                 MatchesWon = footballTeam.MatchesWon,
                 MatchesLost = footballTeam.MatchesLost,
@@ -244,41 +249,41 @@ public class FootballRepository : IFootballRepository
                 GoalsScored = footballTeam.GoalsScored,
                 GoalsLost = footballTeam.GoalsLost,
                 MatchesPlayed = footballTeam.MatchesPlayed
-            ***REMOVED***;
+            };
             team.Points = CalculatePoints(team);
             team.GoalDifference = team.GoalsScored - team.GoalsLost;
             await container.UpsertItemAsync(team);
             return team;
-        ***REMOVED***
+        }
         return null;
-    ***REMOVED***
+    }
     
     public async Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeam)
     {
         CreateDatabaseConnection(out _, out Container container);
         var mappedTeam = _mapper.Map<FootballTeam>(footballTeam);
-        mappedTeam.Id = Guid.NewGuid().ToString();
+        mappedTeam.id = Guid.NewGuid().ToString();
         mappedTeam.Points = CalculatePoints(mappedTeam);
         var createTeam = await container.CreateItemAsync(mappedTeam);
         return createTeam;
-    ***REMOVED***
+    }
 
     public async Task<FootballTeam?> DeleteFootballTeamById(string id)
     {
         CreateDatabaseConnection(out _, out Container container);
         IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
         var matches = queryable
-        .Where(fb => fb.Id!.Equals(id));
+        .Where(fb => fb.id!.Equals(id));
         using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
         while (linqFeed.HasMoreResults)
         {
             FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
             var team = response.FirstOrDefault();
-            await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+            await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
             return team;
-        ***REMOVED***
+        }
         return null;
-    ***REMOVED***
+    }
 
     public async Task<FootballTeam?> DeleteFootballTeamByName(string name)
     {
@@ -291,11 +296,11 @@ public class FootballRepository : IFootballRepository
         {
             FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
             var team = response.FirstOrDefault();
-            await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+            await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
             return team;
-        ***REMOVED***
+        }
         return null;
-    ***REMOVED***
+    }
     
     public async Task<FootballTeam?> DeleteMultipleFootballTeamsByName(string name)
     {
@@ -312,16 +317,16 @@ public class FootballRepository : IFootballRepository
             FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
             foreach (var team in response.Take(10))
             {
-                await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
-            ***REMOVED***
-        ***REMOVED***
+                await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
+            }
+        }
         return null;
-    ***REMOVED***
+    }
     
     public void PopulateTeams()
     {
         // Nothing
-    ***REMOVED***
+    }
 
     [Obsolete("Not needed after initial population of db")]
     public async Task PopulateMatches()
@@ -335,7 +340,7 @@ public class FootballRepository : IFootballRepository
         using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
         {
             records = csv.GetRecords<FootballMatch>().ToList();
-        ***REMOVED***
+        }
 
         records = records.Skip(1);
 
@@ -343,11 +348,11 @@ public class FootballRepository : IFootballRepository
         {
             
             // Here add to db
-            record.Id = Guid.NewGuid().ToString();
+            record.id = Guid.NewGuid().ToString();
             await container.CreateItemAsync(record);
-        ***REMOVED***
+        }
         
-    ***REMOVED***
+    }
 
     public async Task<ActionResult<string>> PredictResult(string team1, string team2)
     {
@@ -376,10 +381,10 @@ public class FootballRepository : IFootballRepository
                     Cornerstaken = match.HomeTeam == team1 ? match.HTCornerstaken : match.ATCornerstaken,
                     Goals = match.HomeTeam == team1 ? match.HTGoals : match.ATGoals,
                     OpponentGoals = match.HomeTeam == team1 ? match.ATGoals : match.HTGoals
-                ***REMOVED***;
+                };
                 requestData.Add(nm);
-            ***REMOVED***
-        ***REMOVED***
+            }
+        }
         query = new(@"select * from c where c.HomeTeam = '@team2' or c.AwayTeam = '@team2' and c.Date < GetCurrentDateTime() order by c.Date desc offset 0 limit 5"
             .Replace("@team2", team2));
         dbContainerResponse = container.GetItemQueryIterator<FootballMatch>(query);
@@ -403,15 +408,15 @@ public class FootballRepository : IFootballRepository
                     Cornerstaken = match.HomeTeam == team2 ? match.HTCornerstaken : match.ATCornerstaken,
                     Goals = match.HomeTeam == team2 ? match.HTGoals : match.ATGoals,
                     OpponentGoals = match.HomeTeam == team2 ? match.ATGoals : match.HTGoals
-                ***REMOVED***;
+                };
                 requestData.Add(nm);
-            ***REMOVED***
-        ***REMOVED***
+            }
+        }
 
         foreach (var m in requestData)
         {
             Console.WriteLine(m);
-        ***REMOVED***
+        }
 
         var request = requestData.ToJson();
         Console.WriteLine(request);
@@ -420,8 +425,8 @@ public class FootballRepository : IFootballRepository
         {
             ClientCertificateOptions = ClientCertificateOption.Manual,
             ServerCertificateCustomValidationCallback =
-                (httpRequestMessage, cert, cetChain, policyErrors) => { return true; ***REMOVED***
-        ***REMOVED***;
+                (httpRequestMessage, cert, cetChain, policyErrors) => { return true; }
+        };
         using var client = new HttpClient(handler);
         // Request data goes here
         // The example below assumes JSON formatting which may be updated
@@ -431,9 +436,9 @@ public class FootballRepository : IFootballRepository
         var requestBody = @"{
                   ""Inputs"": {
                     ""input1"": @input
-                  ***REMOVED***,
-                  ""GlobalParameters"": {***REMOVED***
-                ***REMOVED***".Replace("@input", request);
+                  },
+                  ""GlobalParameters"": {}
+                }".Replace("@input", request);
 
         // Replace this with the primary/secondary key or AMLToken for the endpoint
         var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUri")!);
@@ -444,7 +449,7 @@ public class FootballRepository : IFootballRepository
         if (string.IsNullOrEmpty(apiKey))
         {
             throw new Exception("A key should be provided to invoke the endpoint");
-        ***REMOVED***
+        }
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
         client.BaseAddress = new Uri(url);
@@ -465,25 +470,25 @@ public class FootballRepository : IFootballRepository
         if (responsePrediction.IsSuccessStatusCode)
         {
             string result = await responsePrediction.Content.ReadAsStringAsync();
-            string predictions = String.Format("Result: {0***REMOVED***", result);
+            string predictions = String.Format("Result: {0}", result);
             return predictions;
-        ***REMOVED***
+        }
         else
         {
             string responseContent = await responsePrediction.Content.ReadAsStringAsync();
-            return string.Format("The request failed with status code: {0***REMOVED***", responsePrediction.StatusCode);
-        ***REMOVED***
-    ***REMOVED***
+            return string.Format("The request failed with status code: {0}", responsePrediction.StatusCode);
+        }
+    }
 
     public int CalculatePoints(FootballTeam footballTeam)
     {
         return (footballTeam.MatchesWon * 3) + footballTeam.MatchesDraw;
-    ***REMOVED***
+    }
     [Obsolete("Not needed after update")]
     public bool FootballTeamTableExists()
     {
         return _context.Teams != null;
-    ***REMOVED***
+    }
 
     private void CreateDatabaseConnection(out CosmosClient client, out Container container)
     {
@@ -498,7 +503,7 @@ public class FootballRepository : IFootballRepository
             authKeyOrResourceToken: accountKey!
         );
         container = client.GetContainer(dbName, containerName);
-    ***REMOVED***
+    }
     
     private void CreateQueueConnection(out CosmosClient client, out Container container)
     {
@@ -513,7 +518,7 @@ public class FootballRepository : IFootballRepository
             authKeyOrResourceToken: accountKey!
         );
         container = client.GetContainer(dbName, queueContainer);
-    ***REMOVED***
+    }
 
     private void CreateContainerMatches(out CosmosClient client, out Container container)
     {
@@ -532,6 +537,6 @@ public class FootballRepository : IFootballRepository
 
         var response = db.CreateContainerIfNotExistsAsync(new ContainerProperties(macthesContainer, "/id"), throughput);
         container = response.Result.Container;
-    ***REMOVED***
+    }
     
-***REMOVED***
+}

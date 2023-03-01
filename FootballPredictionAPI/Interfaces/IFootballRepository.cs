@@ -13,6 +13,7 @@ public interface IFootballRepository
     Task<FootballTeam?> AddFootballTeam(FootballTeamDTO footballTeamDTO);
     Task<FootballTeam?> DeleteFootballTeamById(string id);
     Task<FootballTeam?> DeleteFootballTeamByName(string name);
+    public Task<List<FootballTeam>> GetFootballTeamsCosmos();
 
     int CalculatePoints(FootballTeam footballTeam);
     [Obsolete("Not needed after update")]
@@ -30,4 +31,4 @@ public interface IFootballRepository
     FootballTeam? UpdateAwayTeam(FootballMatch footballMatch, FootballTeam footballTeam);
     Task<FootballTeam?> GetTeamByName(string teamName);
     Task<FootballTeam?> AddTeam(FootballTeam ft);
-***REMOVED***
+}

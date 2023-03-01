@@ -25,7 +25,7 @@ namespace FootballPredictionAPI.Repositories
             _context = context;
             _mapper = mapper;
             _configuration = configuration;
-        ***REMOVED***
+        }
         public async Task<IEnumerable<FootballTeam?>> GetFootballTeams()
         {
             CreateDatabaseConnection(out _, out Container container);
@@ -37,25 +37,25 @@ namespace FootballPredictionAPI.Repositories
                 foreach (FootballTeam team in response)
                 {
                     list.Add(team);
-                ***REMOVED***
-            ***REMOVED***
+                }
+            }
             return list!;
-        ***REMOVED***
+        }
 
         public async Task<FootballTeam?> GetFootballTeamById(string id)
         {
             CreateDatabaseConnection(out _, out Container container);
             IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
             var matches = queryable
-            .Where(fb => fb.Id!.Equals(id));
+            .Where(fb => fb.id!.Equals(id));
             using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
             while (linqFeed.HasMoreResults)
             {
                 FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
                 return _mapper.Map<FootballTeam>(response.FirstOrDefault());
-            ***REMOVED***
+            }
             return null;
-        ***REMOVED***
+        }
 
         public async Task<FootballTeam?> GetFootballTeamByName(string name)
         {
@@ -68,16 +68,16 @@ namespace FootballPredictionAPI.Repositories
             {
                 FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
                 return _mapper.Map<FootballTeam>(response.FirstOrDefault());
-            ***REMOVED***
+            }
             return null;
-        ***REMOVED***
+        }
 
         public async Task<FootballTeam?> UpdateFootballTeam(string id, FootballTeam footballTeam)
         {
             CreateDatabaseConnection(out _, out Container container);
             IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
             var matches = queryable
-            .Where(fb => fb.Id!.Equals(id));
+            .Where(fb => fb.id!.Equals(id));
             using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
             while (linqFeed.HasMoreResults)
             {
@@ -85,18 +85,18 @@ namespace FootballPredictionAPI.Repositories
                 var team = response.FirstOrDefault();
                 team = new FootballTeam
                 {
-                    Id = id,
+                    id = id,
                     Name = footballTeam.Name,
                     MatchesWon = footballTeam.MatchesWon,
                     MatchesLost = footballTeam.MatchesLost,
                     MatchesDraw = footballTeam.MatchesDraw,
                     Description = footballTeam.Description,
-                ***REMOVED***;
+                };
                 await container.UpsertItemAsync(team);
                 return team;
-            ***REMOVED***
+            }
             return null;
-        ***REMOVED***
+        }
 
         [Obsolete("Not needed after teams are initialized")]
         public async Task<object> UpdateAllTeams()
@@ -111,37 +111,37 @@ namespace FootballPredictionAPI.Repositories
                 {
                     team.GoalDifference = team.GoalsScored - team.GoalsLost;
                     await container.UpsertItemAsync(team);
-                ***REMOVED***
-            ***REMOVED***
+                }
+            }
             return null!;
-        ***REMOVED***
+        }
 
         public async Task<FootballTeam?> AddFootballTeam(FootballTeam footballTeam)
         {
             CreateDatabaseConnection(out _, out Container container);
             var mappedTeam = _mapper.Map<FootballTeam>(footballTeam);
-            mappedTeam.Id = Guid.NewGuid().ToString();
+            mappedTeam.id = Guid.NewGuid().ToString();
             mappedTeam.Points = CalculatePoints(mappedTeam);
             var createTeam = await container.CreateItemAsync(mappedTeam);
             return createTeam;
-        ***REMOVED***
+        }
 
         public async Task<FootballTeam?> DeleteFootballTeamById(string id)
         {
             CreateDatabaseConnection(out _, out Container container);
             IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
             var matches = queryable
-            .Where(fb => fb.Id!.Equals(id));
+            .Where(fb => fb.id!.Equals(id));
             using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
             while (linqFeed.HasMoreResults)
             {
                 FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
                 var team = response.FirstOrDefault();
-                await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+                await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
                 return team;
-            ***REMOVED***
+            }
             return null;
-        ***REMOVED***
+        }
 
         public async Task<FootballTeam?> DeleteFootballTeamByName(string name)
         {
@@ -154,11 +154,11 @@ namespace FootballPredictionAPI.Repositories
             {
                 FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
                 var team = response.FirstOrDefault();
-                await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+                await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
                 return team;
-            ***REMOVED***
+            }
             return null;
-        ***REMOVED***
+        }
 
         public async Task<FootballTeam?> DeleteMultipleFootballTeamsByName(string name)
         {
@@ -173,11 +173,11 @@ namespace FootballPredictionAPI.Repositories
                 FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
                 foreach (var team in response.Take(10))
                 {
-                    await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
-                ***REMOVED***
-            ***REMOVED***
+                    await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
+                }
+            }
             return null;
-        ***REMOVED***
+        }
 
         [Obsolete("This will no longer be needed after a CosmosDB integration")]
         public async Task<IEnumerable<FootballTeam>> Seed()
@@ -200,17 +200,17 @@ namespace FootballPredictionAPI.Repositories
                     MatchesWon = wins,
                     MatchesLost = lost,
                     MatchesDraw = draw,
-                    Description = $"Team located in Spain: {ftName***REMOVED***"
-                ***REMOVED***;
+                    Description = $"Team located in Spain: {ftName}"
+                };
                 team.Points = CalculatePoints(team);
                 teams.Add(team);
                 await _context.Teams.AddAsync(team);
-            ***REMOVED***
+            }
 
             await _context.SaveChangesAsync();
 
             return _mapper.Map<IEnumerable<FootballTeam>>(teams);
-        ***REMOVED***
+        }
 
         public async Task<ActionResult<string>> PredictResult(string team1, string team2)
         {
@@ -218,8 +218,8 @@ namespace FootballPredictionAPI.Repositories
             {
                 ClientCertificateOptions = ClientCertificateOption.Manual,
                 ServerCertificateCustomValidationCallback =
-                    (httpRequestMessage, cert, cetChain, policyErrors) => { return true; ***REMOVED***
-            ***REMOVED***;
+                    (httpRequestMessage, cert, cetChain, policyErrors) => { return true; }
+            };
             using var client = new HttpClient(handler);
             var requestBody = @"{
                   ""Inputs"": {
@@ -227,11 +227,11 @@ namespace FootballPredictionAPI.Repositories
                       {
                         ""HomeTeam"": ""Sevilla"",
                         ""AwayTeam"": ""Barcelona""
-                      ***REMOVED***
+                      }
                     ]
-                  ***REMOVED***,
-                  ""GlobalParameters"": {***REMOVED***
-                ***REMOVED***";
+                  },
+                  ""GlobalParameters"": {}
+                }";
 
             var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUriPred")!);
             var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
@@ -241,7 +241,7 @@ namespace FootballPredictionAPI.Repositories
             if (string.IsNullOrEmpty(apiKey))
             {
                 throw new Exception("A key should be provided to invoke the endpoint");
-            ***REMOVED***
+            }
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
             client.BaseAddress = new Uri(url);
@@ -254,32 +254,32 @@ namespace FootballPredictionAPI.Repositories
             if (response.IsSuccessStatusCode)
             {
                 string result = await response.Content.ReadAsStringAsync();
-                string predictions = String.Format("Result: {0***REMOVED***", result);
+                string predictions = String.Format("Result: {0}", result);
                 Console.WriteLine(predictions);
                 return predictions;
-            ***REMOVED***
+            }
             else
             {
 
-                Console.WriteLine(string.Format("The request failed with status code: {0***REMOVED***", response.StatusCode));
+                Console.WriteLine(string.Format("The request failed with status code: {0}", response.StatusCode));
 
                 Console.WriteLine(response.Headers.ToString());
 
                 string responseContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine(responseContent);
-                return string.Format("The request failed with status code: {0***REMOVED***", response.StatusCode);
-            ***REMOVED***
-        ***REMOVED***
+                return string.Format("The request failed with status code: {0}", response.StatusCode);
+            }
+        }
 
         public int CalculatePoints(FootballTeam footballTeam)
         {
             return (footballTeam.MatchesWon * 3) + footballTeam.MatchesDraw;
-        ***REMOVED***
+        }
         [Obsolete("Not needed after update")]
         public bool FootballTeamTableExists()
         {
             return _context.Teams != null;
-        ***REMOVED***
+        }
 
         private void CreateDatabaseConnection(out CosmosClient client, out Container container)
         {
@@ -294,6 +294,6 @@ namespace FootballPredictionAPI.Repositories
                 authKeyOrResourceToken: accountKey!
             );
             container = client.GetContainer(dbName, containerName);
-        ***REMOVED***
-    ***REMOVED***
-***REMOVED***
+        }
+    }
+}

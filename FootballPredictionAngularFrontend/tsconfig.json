@@ -21,11 +21,11 @@
       "dom"
     ],
     "useDefineForClassFields": false
-  ***REMOVED***,
+  },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  ***REMOVED***
-***REMOVED***
+  }
+}
