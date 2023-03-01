@@ -265,7 +265,7 @@ public class FootballCosmosRepository : IFootballCosmosRepository
 
     public IEnumerable<Match> GetNewMatches()
     {
-        var URIs = _matchesContext.Matches.Where(m => m.Date < DateTime.Now).OrderBy(m => m.Date).Take(1);
+        var URIs = _matchesContext.Matches.AsEnumerable().Where(m => m.Date < DateTime.Now.Date).OrderBy(m => m.Date).Take(1);
         return URIs;
     }
 
