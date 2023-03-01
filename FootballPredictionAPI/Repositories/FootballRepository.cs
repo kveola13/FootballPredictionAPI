@@ -13,6 +13,7 @@ using CsvHelper;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using NuGet.Protocol;
 using File = System.IO.File;
@@ -40,8 +41,7 @@ public class FootballRepository : IFootballRepository
     public async Task<IEnumerable<Match>> GetNewMatches()
     {
         CreateQueueConnection(out _, out Container container);
-        string today = DateTime.Now.Date.ToString();
-        QueryDefinition query = new($"select * from c where c.Date < '{today}' order by c.Date offset 0 limit 1");
+        QueryDefinition query = new("select top 1 * from c where c.Date < GetCurrentDateTime() order by c.Date");
         var dbContainerResponse = container.GetItemQueryIterator<Match>(query);
         List<Match> URIs = new();
         while (dbContainerResponse.HasMoreResults)
@@ -64,7 +64,7 @@ public class FootballRepository : IFootballRepository
     public async Task<FootballMatch?> AddFootballMatchWithStats(FootballMatch footballMatchesWithStats)
     {
         CreateContainerMatches(out _, out Container container);
-        footballMatchesWithStats.Id = Guid.NewGuid().ToString();
+        footballMatchesWithStats.id = Guid.NewGuid().ToString();
         var createResponse = await container.CreateItemAsync(footballMatchesWithStats);
         return createResponse;
     }
@@ -77,14 +77,14 @@ public class FootballRepository : IFootballRepository
         {
             IOrderedQueryable<Match> queryable = container.GetItemLinqQueryable<Match>();
             var matches = queryable
-                .Where(fm => fm.Id!.Equals(m.Id));
+                .Where(fm => fm.id!.Equals(m.id));
             using FeedIterator<Match> linqFeed = matches.ToFeedIterator();
             while (linqFeed.HasMoreResults)
             {
                 FeedResponse<Match> response = await linqFeed.ReadNextAsync();
                 
                 var match = response.FirstOrDefault();
-                var resp = await container.DeleteItemAsync<Match>(match!.Id, new PartitionKey(match!.Id));
+                var resp = await container.DeleteItemAsync<Match>(match!.id, new PartitionKey(match!.id));
                 if (resp != null)
                 {
                     deleted.Add(match);
@@ -136,7 +136,7 @@ public class FootballRepository : IFootballRepository
         // Add matches to db
         foreach (var match in matches)
         {
-            match.Id = Guid.NewGuid().ToString();
+            match.id = Guid.NewGuid().ToString();
             var createItem = await container.CreateItemAsync(match);
         }
         
@@ -162,7 +162,7 @@ public class FootballRepository : IFootballRepository
         CreateDatabaseConnection(out _, out Container container);
         IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
         var matches = queryable
-        .Where(fb => fb.Id!.Equals(id));
+        .Where(fb => fb.id!.Equals(id));
         using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
         while (linqFeed.HasMoreResults)
         {
@@ -172,6 +172,10 @@ public class FootballRepository : IFootballRepository
         return null;
     }
 
+    public async Task<List<FootballTeam>> GetFootballTeamsCosmos()
+    {
+        return await _context.Teams.ToListAsync();
+    }
     public async Task<FootballTeamDTO?> GetFootballTeamByName(string name)
     {
         CreateDatabaseConnection(out _, out Container container);
@@ -205,7 +209,7 @@ public class FootballRepository : IFootballRepository
     public async Task<FootballTeam?> AddTeam(FootballTeam ft)
     {
         CreateDatabaseConnection(out _, out Container container);
-        ft.Id = Guid.NewGuid().ToString();
+        ft.id = Guid.NewGuid().ToString();
         var createTeam = await container.CreateItemAsync(ft);
         return createTeam;
     }
@@ -227,7 +231,7 @@ public class FootballRepository : IFootballRepository
         CreateDatabaseConnection(out _, out Container container);
         IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
         var matches = queryable
-        .Where(fb => fb.Id!.Equals(id));
+        .Where(fb => fb.id!.Equals(id));
         using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
         while (linqFeed.HasMoreResults)
         {
@@ -235,7 +239,7 @@ public class FootballRepository : IFootballRepository
             var team = response.FirstOrDefault();
             team = new FootballTeam
             {
-                Id = footballTeam.Id,
+                id = footballTeam.id,
                 Name = footballTeam.Name,
                 MatchesWon = footballTeam.MatchesWon,
                 MatchesLost = footballTeam.MatchesLost,
@@ -257,7 +261,7 @@ public class FootballRepository : IFootballRepository
     {
         CreateDatabaseConnection(out _, out Container container);
         var mappedTeam = _mapper.Map<FootballTeam>(footballTeam);
-        mappedTeam.Id = Guid.NewGuid().ToString();
+        mappedTeam.id = Guid.NewGuid().ToString();
         mappedTeam.Points = CalculatePoints(mappedTeam);
         var createTeam = await container.CreateItemAsync(mappedTeam);
         return createTeam;
@@ -268,13 +272,13 @@ public class FootballRepository : IFootballRepository
         CreateDatabaseConnection(out _, out Container container);
         IOrderedQueryable<FootballTeam> queryable = container.GetItemLinqQueryable<FootballTeam>();
         var matches = queryable
-        .Where(fb => fb.Id!.Equals(id));
+        .Where(fb => fb.id!.Equals(id));
         using FeedIterator<FootballTeam> linqFeed = matches.ToFeedIterator();
         while (linqFeed.HasMoreResults)
         {
             FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
             var team = response.FirstOrDefault();
-            await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+            await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
             return team;
         }
         return null;
@@ -291,7 +295,7 @@ public class FootballRepository : IFootballRepository
         {
             FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
             var team = response.FirstOrDefault();
-            await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+            await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
             return team;
         }
         return null;
@@ -312,7 +316,7 @@ public class FootballRepository : IFootballRepository
             FeedResponse<FootballTeam> response = await linqFeed.ReadNextAsync();
             foreach (var team in response.Take(10))
             {
-                await container.DeleteItemAsync<FootballTeam>(team!.Id, new PartitionKey(team!.Id));
+                await container.DeleteItemAsync<FootballTeam>(team!.id, new PartitionKey(team!.id));
             }
         }
         return null;
@@ -343,7 +347,7 @@ public class FootballRepository : IFootballRepository
         {
             
             // Here add to db
-            record.Id = Guid.NewGuid().ToString();
+            record.id = Guid.NewGuid().ToString();
             await container.CreateItemAsync(record);
         }
         
@@ -436,7 +440,7 @@ public class FootballRepository : IFootballRepository
                 }".Replace("@input", request);
 
         // Replace this with the primary/secondary key or AMLToken for the endpoint
-        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUri")!);
+        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUriPred")!);
         var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
         var url = secretClient.GetSecretAsync("prediction-endpoint-url").Result.Value.Value;
         var apiKey = secretClient.GetSecretAsync("prediction-endpoint-api-key").Result.Value.Value;
