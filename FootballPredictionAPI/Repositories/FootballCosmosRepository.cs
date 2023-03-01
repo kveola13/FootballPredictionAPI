@@ -263,9 +263,10 @@ public class FootballCosmosRepository : IFootballCosmosRepository
         }
     }
 
-    public Task<IEnumerable<Match>> GetNewMatches()
+    public IEnumerable<Match> GetNewMatches()
     {
-        throw new NotImplementedException();
+        var URIs = _matchesContext.Matches.Where(m => m.Date < DateTime.Now).OrderBy(m => m.Date).Take(1);
+        return URIs;
     }
 
     public void PopulateMatchesToCome()
@@ -314,11 +315,11 @@ public class FootballCosmosRepository : IFootballCosmosRepository
         List<Match> deleted = new();
         foreach (Match match in matchesToDelete)
         {
-            var matchObject = _context.Matches.FirstOrDefault(m => m.id.Equals(match.id));
+            var matchObject = _matchesContext.Matches.FirstOrDefault(m => m.id.Equals(match.id));
             if (matchObject != null)
             {
-                _context.Matches.Remove(matchObject);
-                int result = _context.SaveChanges();
+                _matchesContext.Matches.Remove(matchObject);
+                int result = _matchesContext.SaveChanges();
                 if (result > 0)
                 {
                     deleted.Add(matchObject);
@@ -342,14 +343,22 @@ public class FootballCosmosRepository : IFootballCosmosRepository
         return t;
     }
 
-    public FootballTeam? UpdateAwayTeam(FootballMatch footballMatch, FootballTeam footballTeam)
+    public FootballTeam? UpdateAwayTeam(FootballMatch m, FootballTeam t)
     {
-        throw new NotImplementedException();
+        t.MatchesWon += m.HTGoals > m.ATGoals ? 1 : 0;
+        t.MatchesLost += m.HTGoals < m.ATGoals ? 1 : 0;
+        t.MatchesDraw += m.HTGoals == m.ATGoals ? 1 : 0;
+        t.GoalsScored += (int)m.HTGoals;
+        t.GoalsLost += (int)m.ATGoals;
+        t.MatchesPlayed += 1;
+        t.Points = CalculatePoints(t);
+        t.GoalDifference = t.GoalsScored - t.GoalsLost;
+        return t;
     }
 
-    public async Task<FootballTeam?> GetTeamByName(string teamName)
+    public FootballTeam? GetTeamByName(string teamName)
     {
-        var team = await _context.Teams.FirstOrDefaultAsync(t => t.Name.ToLower().Equals(teamName.ToLower()));
+        var team = _context.Teams.FirstOrDefault(t => t.Name.ToLower().Equals(teamName.ToLower()));
         return team;
     }
 

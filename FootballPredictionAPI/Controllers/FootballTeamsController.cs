@@ -25,10 +25,10 @@ namespace FootballPredictionAPI.Controllers
             this._cosmosRepository = _cosmosRepository;
         }
         [HttpGet("getnewmatches")]
-        public async Task<ActionResult<IEnumerable<Match>>> GetNewMatches()
+        public  ActionResult<IEnumerable<Match>> GetNewMatches()
         {
             List<FootballMatch> fmatches = new();
-            var newMatches = await _repository.GetNewMatches();
+            var newMatches =  _cosmosRepository.GetNewMatches();
             if (newMatches.Count() == 0)
             {
                 return Ok("No matches to update");
@@ -42,8 +42,8 @@ namespace FootballPredictionAPI.Controllers
                 fmatches.Add(footballMatchesWithStats);
                 // Add to db
                 // Check if match with that date and teams already exists
-                FootballMatch? resultAddMatch = await _repository.AddFootballMatchWithStats(footballMatchesWithStats);
-                if (resultAddMatch == null)
+                bool resultAddMatch = _cosmosRepository.AddFootballMatchWithStats(footballMatchesWithStats);
+                if (!resultAddMatch)
                 {
                     return BadRequest("Football Match with stat not added!");
                 }
@@ -52,12 +52,12 @@ namespace FootballPredictionAPI.Controllers
             // Update teams
             foreach (var m in fmatches)
             {
-                var homeTeam = await _repository.GetTeamByName(m.HomeTeam!);
-                var awayTeam = await _repository.GetTeamByName(m.AwayTeam!);
+                var homeTeam = _cosmosRepository.GetTeamByName(m.HomeTeam!);
+                var awayTeam = _cosmosRepository.GetTeamByName(m.AwayTeam!);
                 if (homeTeam != null)
                 {
-                    FootballTeam? hft = _repository.UpdateHomeTeam(m, homeTeam);
-                    var responseUpdateht = await _repository.UpdateFootballTeam(hft!.id!, hft);
+                    FootballTeam? hft = _cosmosRepository.UpdateHomeTeam(m, homeTeam);
+                    var responseUpdateht = _cosmosRepository.UpdateFootballTeam(hft!.id!, hft);
                     if (responseUpdateht == null)
                     {
                         return BadRequest("Problems while updating home team!");
@@ -77,8 +77,8 @@ namespace FootballPredictionAPI.Controllers
                     };
                     hft.Points = _repository.CalculatePoints(hft);
                     hft.GoalDifference = hft.GoalsScored - hft.GoalsLost;
-                    var responseAddTeam = await _repository.AddTeam(hft);
-                    if (responseAddTeam == null)
+                    var responseAddTeam = _cosmosRepository.AddTeam(hft);
+                    if (!responseAddTeam)
                     {
                         return BadRequest("Problems while adding home team!");
                     }
@@ -86,8 +86,8 @@ namespace FootballPredictionAPI.Controllers
 
                 if (awayTeam != null)
                 {
-                    FootballTeam? aft = _repository.UpdateAwayTeam(m, awayTeam);
-                    var responseUpdateAt = await _repository.UpdateFootballTeam(aft!.id!, aft);
+                    FootballTeam? aft = _cosmosRepository.UpdateAwayTeam(m, awayTeam);
+                    var responseUpdateAt = _cosmosRepository.UpdateFootballTeam(aft!.id!, aft);
                     if (responseUpdateAt == null)
                     {
                         return BadRequest("Problems while updating Away Team!");
@@ -107,8 +107,8 @@ namespace FootballPredictionAPI.Controllers
                     };
                     aft.Points = _repository.CalculatePoints(aft);
                     aft.GoalDifference = aft.GoalsScored - aft.GoalsLost;
-                    var responseAddTeam = await _repository.AddTeam(aft);
-                    if (responseAddTeam == null)
+                    var responseAddTeam =  _cosmosRepository.AddTeam(aft);
+                    if (!responseAddTeam)
                     {
                         return BadRequest("Problems while adding away team!");
                     }
@@ -116,7 +116,7 @@ namespace FootballPredictionAPI.Controllers
             }
                 
             // Remove from queue
-            var response = await _repository.DeleteFromQueue(newMatches);
+            var response = _cosmosRepository.DeleteFromQueue(newMatches);
             if (response.Count() == newMatches.Count())
             {
                 return Ok(response);

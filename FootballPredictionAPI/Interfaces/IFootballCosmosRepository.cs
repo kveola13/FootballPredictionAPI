@@ -19,14 +19,14 @@ public interface IFootballCosmosRepository
 
     Task PopulateMatches();
     Task<ActionResult<string>> PredictResult(string team1, string team2);
-    Task<IEnumerable<Match>> GetNewMatches();
+    IEnumerable<Match> GetNewMatches();
     void PopulateMatchesToCome();
     FootballMatch ReadStatsForMatch(Match match);
     bool AddFootballMatchWithStats(FootballMatch footballMatchesWithStats);
     IEnumerable<Match> DeleteFromQueue(IEnumerable<Match> matchesToDelete);
     FootballTeam? UpdateHomeTeam(FootballMatch footballMatch, FootballTeam footballTeam);
     FootballTeam? UpdateAwayTeam(FootballMatch footballMatch, FootballTeam footballTeam);
-    Task<FootballTeam?> GetTeamByName(string teamName);
+    FootballTeam? GetTeamByName(string teamName);
     bool AddTeam(FootballTeam ft);
     IEnumerable<Match> GetMatchesQueue();
 }
