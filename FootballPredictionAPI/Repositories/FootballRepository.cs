@@ -41,7 +41,8 @@ public class FootballRepository : IFootballRepository
     public async Task<IEnumerable<Match>> GetNewMatches()
     {
         CreateQueueConnection(out _, out Container container);
-        QueryDefinition query = new("select top 1 * from c where c.Date < GetCurrentDateTime() order by c.Date");
+        string today = DateTime.Now.Date.ToString();
+        QueryDefinition query = new($"select * from c where c.Date < '{today}' order by c.Date offset 0 limit 1");
         var dbContainerResponse = container.GetItemQueryIterator<Match>(query);
         List<Match> URIs = new();
         while (dbContainerResponse.HasMoreResults)
@@ -440,7 +441,7 @@ public class FootballRepository : IFootballRepository
                 }".Replace("@input", request);
 
         // Replace this with the primary/secondary key or AMLToken for the endpoint
-        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUriPred")!);
+        var keyVaultEndpoint = new Uri(_configuration.GetConnectionString("VaultUri")!);
         var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
         var url = secretClient.GetSecretAsync("prediction-endpoint-url").Result.Value.Value;
         var apiKey = secretClient.GetSecretAsync("prediction-endpoint-api-key").Result.Value.Value;
