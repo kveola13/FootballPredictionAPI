@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Net.Http.Headers;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;

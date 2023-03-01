@@ -1,4 +1,4 @@
-﻿namespace FootballPredictionAPI.DTOs
+namespace FootballPredictionAPI.DTOs
 {
     public class FootballTeamDTO
     {
