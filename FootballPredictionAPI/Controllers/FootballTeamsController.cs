@@ -38,7 +38,7 @@ namespace FootballPredictionAPI.Controllers
                 // Read stats 
                 // Save to FootballMatch object
                 // TO DO: Update time
-                var footballMatchesWithStats = _repository.ReadStatsForMatch(match);
+                var footballMatchesWithStats = _cosmosRepository.ReadStatsForMatch(match);
                 fmatches.Add(footballMatchesWithStats);
                 // Add to db
                 // Check if match with that date and teams already exists
@@ -75,7 +75,7 @@ namespace FootballPredictionAPI.Controllers
                         GoalsLost = (int)m.ATGoals,
                         MatchesPlayed = 1
                     };
-                    hft.Points = _repository.CalculatePoints(hft);
+                    hft.Points = _cosmosRepository.CalculatePoints(hft);
                     hft.GoalDifference = hft.GoalsScored - hft.GoalsLost;
                     var responseAddTeam = _cosmosRepository.AddTeam(hft);
                     if (!responseAddTeam)
@@ -105,7 +105,7 @@ namespace FootballPredictionAPI.Controllers
                         GoalsLost = (int)m.HTGoals,
                         MatchesPlayed = 1
                     };
-                    aft.Points = _repository.CalculatePoints(aft);
+                    aft.Points = _cosmosRepository.CalculatePoints(aft);
                     aft.GoalDifference = aft.GoalsScored - aft.GoalsLost;
                     var responseAddTeam =  _cosmosRepository.AddTeam(aft);
                     if (!responseAddTeam)
@@ -126,9 +126,9 @@ namespace FootballPredictionAPI.Controllers
         
         [Obsolete("One time job & has been run already")]
         [HttpPost("populatematchestocome")]
-        public async Task PopulateMatchesToCome()
+        public  void PopulateMatchesToCome()
         {
-            await _repository.PopulateMatchesToCome();
+             _cosmosRepository.PopulateMatchesToCome();
         }
 
         [HttpGet("predict/{team1}/{team2}")]
@@ -233,9 +233,9 @@ namespace FootballPredictionAPI.Controllers
         [Obsolete("Not needed after initial population of db")]
 
         [HttpPost("populatematches")]
-        public async Task PopulateMatches()
+        public void PopulateMatches()
         {
-            await _repository.PopulateMatches();
+             _cosmosRepository.PopulateMatches();
         }
 
         [HttpGet("queue/getMatches")]
