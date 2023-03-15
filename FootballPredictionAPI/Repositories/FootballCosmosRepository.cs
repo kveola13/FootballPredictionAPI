@@ -8,6 +8,7 @@ using FootballPredictionAPI.Interfaces;
 using FootballPredictionAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph;
 using Newtonsoft.Json;
 using NuGet.Protocol;
 
@@ -278,7 +279,7 @@ public class FootballCosmosRepository : IFootballCosmosRepository
         
         // Convert response to correct input format 
         var json_body = JsonConvert.DeserializeObject<JsonDeserialization.Root>(normalisedData);
-        json_body.Results.output1[0].Add("HTResult", "");
+        json_body.Results.output1[0].Add("HTResult", " ");
         var new_request_body = JsonConvert.SerializeObject(json_body.Results.output1, Formatting.Indented);
         Console.WriteLine(new_request_body);
         var handler2 = new HttpClientHandler()
@@ -301,7 +302,11 @@ public class FootballCosmosRepository : IFootballCosmosRepository
             if (response.IsSuccessStatusCode)
             {
                 string result = await response.Content.ReadAsStringAsync();
-                return "Result: " + result;
+                var elements = result.Split("[");
+
+                var scores = elements.Last().Substring(0, elements.Last().Length - 4).Split(", ").TakeLast(4);
+                
+                return "(Draw, Loos, Win probability)\nResult: " + string.Join(",", scores);
             }
             else
             {
