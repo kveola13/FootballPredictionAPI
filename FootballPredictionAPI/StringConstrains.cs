@@ -8,4 +8,6 @@ public static class StringConstrains
     public static string DatabaseName { get; set; }
     public static string NormalizationUrl { get; set; }
     public static string NormalizationAPIKey { get; set; }
+
+    public static string PredictionEndpointURL { get; set; }
 }

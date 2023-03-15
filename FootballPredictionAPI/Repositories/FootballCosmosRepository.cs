@@ -8,6 +8,7 @@ using FootballPredictionAPI.Interfaces;
 using FootballPredictionAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph;
 using Newtonsoft.Json;
 using NuGet.Protocol;
 
@@ -275,8 +276,45 @@ public class FootballCosmosRepository : IFootballCosmosRepository
         {
             return "Wasn't able to deserialize data";
         }
+        
+        // Convert response to correct input format 
+        var json_body = JsonConvert.DeserializeObject<JsonDeserialization.Root>(normalisedData);
+        json_body.Results.output1[0].Add("HTResult", " ");
+        var new_request_body = JsonConvert.SerializeObject(json_body.Results.output1, Formatting.Indented);
+        Console.WriteLine(new_request_body);
+        var handler2 = new HttpClientHandler()
+        {
+            ClientCertificateOptions = ClientCertificateOption.Manual,
+            ServerCertificateCustomValidationCallback =
+                (httpRequestMessage, cert, cetChain, policyErrors) => { return true; }
+        };
+        using (var client = new HttpClient(handler2))
+        {
+            var requestBody = new_request_body;
+        
+            client.BaseAddress = new Uri(StringConstrains.PredictionEndpointURL);
 
-        return null;
+            var content = new StringContent(requestBody);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            
+            HttpResponseMessage response = await client.PostAsync("", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string result = await response.Content.ReadAsStringAsync();
+                var elements = result.Split("[");
+
+                var scores = elements.Last().Substring(0, elements.Last().Length - 4).Split(", ").TakeLast(4);
+                
+                return "(Draw, Loos, Win probability)\nResult: " + string.Join(",", scores);
+            }
+            else
+            {
+                string responseContent = await response.Content.ReadAsStringAsync();
+                
+                return string.Format("The request failed with status code: {0}", response.StatusCode);
+            }
+        }
     }
 
     public IEnumerable<Match> GetNewMatches()
