@@ -8,6 +8,7 @@ using FootballPredictionAPI.Interfaces;
 using FootballPredictionAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using NuGet.Protocol;
 
 
@@ -230,53 +231,65 @@ public class FootballCosmosRepository : IFootballCosmosRepository
             ServerCertificateCustomValidationCallback =
                 (httpRequestMessage, cert, cetChain, policyErrors) => { return true; }
         };
-        using var client = new HttpClient(handler);
-        // Request data goes here
-        // The example below assumes JSON formatting which may be updated
-        // depending on the format your endpoint expects.
-        // More information can be found here:
-        // https://docs.microsoft.com/azure/machine-learning/how-to-deploy-advanced-entry-script
-        var requestBody = @"{
+
+        string normalisedData = null;
+        using (var client = new HttpClient(handler))
+        {
+            
+            var requestBody = @"{
                   ""Inputs"": {
-                    ""input1"": @input
+                    ""input1"": @request
                   },
                   ""GlobalParameters"": {}
-                }".Replace("@input", request);
+                }".Replace("@request", request);
+                
+            // Replace this with the primary/secondary key or AMLToken for the endpoint
+            const string apiKey = "";
+            if (string.IsNullOrEmpty(apiKey))  
+            {
+                throw new Exception("A key should be provided to invoke the endpoint");
+            }
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( "Bearer", apiKey);
+            client.BaseAddress = new Uri("");
 
-        // Replace this with the primary/secondary key or AMLToken for the endpoint
+            var content = new StringContent(requestBody);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-        if (string.IsNullOrEmpty(StringConstrains.PredictionAPIKey))
-        {
-            throw new Exception("A key should be provided to invoke the endpoint");
+            // WARNING: The 'await' statement below can result in a deadlock
+            // if you are calling this code from the UI thread of an ASP.Net application.
+            // One way to address this would be to call ConfigureAwait(false)
+            // so that the execution does not attempt to resume on the original context.
+            // For instance, replace code such as:
+            //      result = await DoSomeTask()
+            // with the following:
+            //      result = await DoSomeTask().ConfigureAwait(false)
+            HttpResponseMessage response = await client.PostAsync("", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("Result: {0}", result);
+                normalisedData = result;
+            }
+            else
+            {
+                Console.WriteLine(string.Format("The request failed with status code: {0}", response.StatusCode));
+
+                // Print the headers - they include the requert ID and the timestamp,
+                // which are useful for debugging the failure
+                Console.WriteLine(response.Headers.ToString());
+
+                string responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(responseContent);
+                return string.Format("The request failed with status code: {0}", response.StatusCode);
+            }
         }
 
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", StringConstrains.PredictionAPIKey);
-        client.BaseAddress = new Uri(StringConstrains.PredictionUrl);
-
-        var content = new StringContent(requestBody);
-        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-        // WARNING: The 'await' statement below can result in a deadlock
-        // if you are calling this code from the UI thread of an ASP.Net application.
-        // One way to address this would be to call ConfigureAwait(false)
-        // so that the execution does not attempt to resume on the original context.
-        // For instance, replace code such as:
-        //      result = await DoSomeTask()
-        // with the following:
-        //      result = await DoSomeTask().ConfigureAwait(false)
-        HttpResponseMessage responsePrediction = await client.PostAsync("", content);
-
-        if (responsePrediction.IsSuccessStatusCode)
+        if (normalisedData == null)
         {
-            string result = await responsePrediction.Content.ReadAsStringAsync();
-            string predictions = String.Format("Result: {0}", result);
-            return predictions;
+            return "Wasn't able to deserialize data";
         }
-        else
-        {
-            string responseContent = await responsePrediction.Content.ReadAsStringAsync();
-            return string.Format("The request failed with status code: {0}", responsePrediction.StatusCode);
-        }
+        return null;
     }
 
     public IEnumerable<Match> GetNewMatches()
