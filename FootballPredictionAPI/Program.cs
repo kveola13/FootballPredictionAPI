@@ -18,8 +18,8 @@ StringConstrains.APIConnectionString = client.GetSecretAsync("ConnectionStrings"
 StringConstrains.QueueConnectionString = client.GetSecretAsync("queueConnectionString").Result.Value.Value;
 StringConstrains.DatabaseName = client.GetSecretAsync("DatabaseName").Result.Value.Value;
 StringConstrains.QueueDBName = client.GetSecretAsync("queueDBname").Result.Value.Value;
-StringConstrains.PredictionUrl = client.GetSecretAsync("prediction-endpoint-url").Result.Value.Value;
-StringConstrains.PredictionAPIKey = client.GetSecretAsync("prediction-endpoint-api-key").Result.Value.Value;
+StringConstrains.NormalizationUrl = client.GetSecretAsync("normalization-endpoint-url").Result.Value.Value;
+StringConstrains.NormalizationAPIKey = client.GetSecretAsync("prediction-endpoint-api-key").Result.Value.Value;
 var containerName = "teams";
 
 
