@@ -29,6 +29,7 @@ namespace FootballPredictionAPI.Controllers
         {
             List<FootballMatch> fmatches = new();
             var newMatches =  _cosmosRepository.GetNewMatches();
+            int matchesToDelete = newMatches.Count();
             if (newMatches.Count() == 0)
             {
                 return Ok("No matches to update");
@@ -117,7 +118,7 @@ namespace FootballPredictionAPI.Controllers
                 
             // Remove from queue
             var response = _cosmosRepository.DeleteFromQueue(newMatches);
-            if (response.Count() == newMatches.Count())
+            if (response.Count() == matchesToDelete)
             {
                 return Ok(response);
             }
