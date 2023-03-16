@@ -6,7 +6,7 @@ namespace FootballPredictionAPI.Models;
 public class Match
 {
     [JsonProperty(PropertyName = "id")]
-    public string? Id { get; set; }
+    public string? id { get; set; }
     public DateTime? Date { get; set; }
     public string? HomeTeam { get; set; }
     public string? AwayTeam { get; set; }
