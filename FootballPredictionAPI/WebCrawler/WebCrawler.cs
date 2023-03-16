@@ -1,9 +1,11 @@
 using System.Reflection;
+using System.Text.RegularExpressions;
 using AutoMapper;
 using FootballPredictionAPI.Models;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore.Cosmos.Storage.Internal;
 using Newtonsoft.Json;
+using Match = FootballPredictionAPI.Models.Match;
 
 namespace FootballPredictionAPI.WebCrawler;
 
@@ -110,6 +112,12 @@ public class WebCrawler
     {
         HtmlWeb web = new HtmlWeb();
         HtmlDocument htmlDoc = web.Load(match.StatsUrl);
+        
+        var date = htmlDoc.DocumentNode.SelectNodes("//p[@class='styled__TextRegularStyled-sc-1raci4c-0 fciXFy']").FirstOrDefault().InnerText;
+        var pattern = @"[0-9]{2}.[0-9]{2}.[0-9]{4}";
+        Regex re = new Regex(pattern);
+        var onlyDate = re.Match(date).Value;
+        
         var stats = htmlDoc.DocumentNode.SelectNodes("//div[@class='styled__TabContent-sc-165n2lv-0 bdnghW']")
             .LastOrDefault();
         var table = stats!.SelectNodes(".//div[@class='styled__CellStyled-vl6wna-0 gpAwUe']").FirstOrDefault();
@@ -142,6 +150,10 @@ public class WebCrawler
         {
             property.SetValue(mp, property.GetValue(match, null), null);
         }
+
+        Console.WriteLine(mp);
+        mp.Date = DateTime.Parse(onlyDate);
+        Console.WriteLine(mp);
         return mp;
     }
 }
