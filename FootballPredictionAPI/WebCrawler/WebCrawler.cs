@@ -138,8 +138,8 @@ public class WebCrawler
                     string home = "HT" + String.Join("", feat.Split(" "));
                     string away = "AT" + String.Join("", feat.Split(" "));
 
-                    dict.Add(home, Convert.ToDouble(features[0].Replace("%", "").Replace(".", ",")));
-                    dict.Add(away, Convert.ToDouble(features[2].Replace("%", "").Replace(".", ",")));
+                    dict.Add(home, Convert.ToDouble(features[0].Replace("%", "")));
+                    dict.Add(away, Convert.ToDouble(features[2].Replace("%", "")));
 
                 }
             }
