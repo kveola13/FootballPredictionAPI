@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using AutoMapper;
@@ -137,9 +138,9 @@ public class WebCrawler
 
                     string home = "HT" + String.Join("", feat.Split(" "));
                     string away = "AT" + String.Join("", feat.Split(" "));
-
-                    dict.Add(home, Convert.ToDouble(features[0].Replace("%", "")));
-                    dict.Add(away, Convert.ToDouble(features[2].Replace("%", "")));
+                    CultureInfo yourCulture = CultureInfo.GetCultureInfo("fr-FR");
+                    dict.Add(home, Convert.ToDouble(features[0].Replace("%", "").Replace(".", ","), yourCulture));
+                    dict.Add(away, Convert.ToDouble(features[2].Replace("%", "").Replace(".", ","), yourCulture));
 
                 }
             }
